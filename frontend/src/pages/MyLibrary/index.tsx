@@ -47,7 +47,7 @@ const MyLibrary = () => {
   const getUserStories = async () => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8080/${user.id}/get-all-stories`,
+        `https://storage-api-46h8.onrender.com/${user.id}/get-all-stories`,
       );
       if (!response.ok) {
         console.log('Network response was not ok');
@@ -70,7 +70,7 @@ const MyLibrary = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8080/${storyId}/get-story`,
+        `https://storage-api-46h8.onrender.com/${storyId}/get-story`,
       );
       if (!response.ok) {
         console.log('Network response was not ok');

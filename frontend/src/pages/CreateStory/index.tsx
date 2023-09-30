@@ -141,7 +141,7 @@ const CreateStory = () => {
 
   const handleSubmitDebug = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/test', {
+      const response = await fetch('https://gen-api.onrender.com/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -183,7 +183,7 @@ const CreateStory = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/actual', {
+      const response = await fetch('https://gen-api.onrender.com/actual', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -240,7 +240,7 @@ const CreateStory = () => {
     const storyData = response;
     setIsSaving(true);
     try {
-      const response = await fetch('http://127.0.0.1:8080/save-story', {
+      const response = await fetch('https://storage-api-46h8.onrender.com/save-story', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
