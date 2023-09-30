@@ -95,7 +95,7 @@ const MyLibrary = () => {
     setIsDeleting((prevDeletings) => [...prevDeletings, storyId]);
     try {
       const response = await fetch(
-        `http://127.0.0.1:8080/${storyId}/delete-story`,
+        `https://storage-api-46h8.onrender.com/${storyId}/delete-story`,
         {
           method: 'DELETE',
         },
@@ -136,7 +136,7 @@ const MyLibrary = () => {
   const handleShareButtonClick = async (storyId: number) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8080/${storyId}/set-to-public`,
+        `https://storage-api-46h8.onrender.com/${storyId}/set-to-public`,
         {
           method: 'PUT',
           headers: {
@@ -162,7 +162,7 @@ const MyLibrary = () => {
   const handleUnshareButtonClick = async (storyId: number) => {
     try {
       const response = await fetch(
-        `http://127.0.0.1:8080/${storyId}/set-to-private`,
+        `https://storage-api-46h8.onrender.com/${storyId}/set-to-private`,
         {
           method: 'PUT',
           headers: {
