@@ -18,10 +18,12 @@ import {
   Container,
 } from '@chakra-ui/react';
 import { useState } from 'react';
-import trackExample from '/src/images/TrackExampleHorizontal.png';
+import trackExample from '/src/images/banner1-upscaled.png';
 import gradientDivider from '/src/images/GradientDivider.svg';
 import taleweaverIcon from '/src/images/taleweaver_icon_svg.svg';
-import heroBackground from '/src/images/heroBackground.png';
+import waves from '/src/images/waves.svg';
+import heroBackground from '/src/images/banner1-upscaled.png';
+import { motion } from 'framer-motion';
 
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../App/components/supabaseClient';
@@ -30,90 +32,60 @@ import SplitWithImage from '../../App/components/SplitWithImage';
 import SplitWithMessage from '../../App/components/SplitWithMessage';
 import SplineScene from '../../App/components/SplineScene';
 import PricingSection from '../../App/components/PricingSection';
+import FlipbookDisplay from '../../App/components/FlipbookDisplay';
+import './styles.css';
 
 const Home = () => {
-  /*
-  const handleSubmitDebugWithoutApi = () => {
-    const story = `{
-      "title": "The Adventures of Lily and Max",
-      "focus": "vocabulary",
-      "vocabulary_age": "3",
-      "story": [
-        {
-          "page": 1,
-          "text": "Once upon a time, there was a girl named Lily and a boy named Max. They were best friends. Lily had a beautiful pink dress, and Max wore a cool blue hat.",
-          "image_prompt": "An illustration of Lily wearing a pink dress and Max wearing a blue hat, holding hands and smiling"
-        },
-        {
-          "page": 2,
-          "text": "One sunny day, Lily and Max went to the park. They saw a big, yellow slide. 'Let's go down the slide,' said Max. 'Yes,' replied Lily with excitement.",
-          "image_prompt": "An image of Lily and Max sliding down a bright yellow slide, laughing and having fun"
-        },
-        {
-          "page": 3,
-          "text": "At the park, they also found a friendly dog named Spot. Spot had black and white fur. 'Woof woof!' barked Spot. 'He wants to play with us,' said Lily. 'Let's throw the ball!' exclaimed Max.",
-          "image_prompt": "An illustration of Lily, Max, and Spot playing with a red ball in the park, surrounded by green trees and colorful flowers"
-        },
-        {
-          "page": 4,
-          "text": "Lily and Max played with the ball until it was time to go home. They were tired but happy. 'Let's walk together,' suggested Lily. 'Hold my hand,' said Max.",
-          "image_prompt": "A picture of Lily and Max walking hand in hand, with the sun setting behind them, casting a warm orange glow"
-        },
-        {
-          "page": 5,
-          "text": "Finally, they reached their houses. Lily gave Max a big hug. 'Goodnight, Max,' said Lily. 'Goodnight, Lily,' replied Max. They went to sleep, looking forward to more adventures tomorrow.",
-          "image_prompt": "An image of Lily and Max hugging each other goodnight, with their houses in the background and a starry night sky"
-        }
-      ]
-    }`;
-    console.log(story);
-    setResponse(JSON.parse(story));
-  };
-  */
-
-  /*
-  const handleSubmitWithoutApi = async () => {
-    console.log(`Submitting prompt: ${prompt}`);
-
-    const APIBody = {
-      model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'user',
-          content: `Generate a ${numPages}-page story about ${prompt}. For each page,
-          include an image prompt that is specific, colourful and creative and
-          matches the story of the page content. ${additionalPromptInfo}.  Format it in json format, like this example:
-          {
-          "title": "Charlie and his ball",
-          "focus": "${focus}",
-          "vocabulary_age": "${vocabAge}",
-          "story": {
-            ["page": 1,
-            "text": "First page of the story text goes here",
-            "image_prompt": "A young boy and his red ball on a green landscape with a tree in the background"],
-          ...
-          }}`,
-        },
-      ],
-      temperature: 0.7,
-    };
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + apiKey,
+  const exampleStory = {
+    title: "Holly's Flying Adventure",
+    moral: 'Gratitude',
+    genre: 'Poetry',
+    vocabulary_age: '3',
+    score: '0',
+    total_pages: 4,
+    story: [
+      {
+        page: 1,
+        text: 'Holly watched birds soar high, wished she could fly too.',
+        image_prompt:
+          'A 5-year-old girl with pigtails, fair skin, and brown hair, a 5-year-old girl with pigtails, flapping her arms on a grassy hill with birds flying in the sky.',
+        subject_description:
+          '{"Holly": "A 5-year-old girl with pigtails, fair skin, and brown hair."}',
+        image_url:
+          'https://svnatoofwyqiyenodtsq.supabase.co/storage/v1/object/public/images/248/1.png',
       },
-      body: JSON.stringify(APIBody),
-    });
-
-    const data = await response.json();
-    const story = data.choices[0].message.content;
-
-    console.log(story);
-    setResponse(JSON.parse(story));
+      {
+        page: 2,
+        text: 'A kind bird named Blue, offered Holly his feathered wings.',
+        image_prompt:
+          'A 5-year-old girl with pigtails, fair skin, and brown hair, with A blue bird with a friendly smile, a blue bird, helping her wear feathered wings on a tree branch.',
+        subject_description:
+          '{"Holly": "A 5-year-old girl with pigtails, fair skin, and brown hair.", "Blue": "A blue bird with a friendly smile."}',
+        image_url:
+          'https://svnatoofwyqiyenodtsq.supabase.co/storage/v1/object/public/images/248/2.png',
+      },
+      {
+        page: 3,
+        text: "Together they soared high, Holly's heart filled with joy.",
+        image_prompt:
+          'A 5-year-old girl with pigtails, fair skin, and brown hair and A blue bird with a friendly smile soaring through fluffy clouds in a vibrant blue sky.',
+        subject_description:
+          '{"Holly": "A 5-year-old girl with pigtails, fair skin, and brown hair.", "Blue": "A blue bird with a friendly smile."}',
+        image_url:
+          'https://svnatoofwyqiyenodtsq.supabase.co/storage/v1/object/public/images/248/3.png',
+      },
+      {
+        page: 4,
+        text: 'Grateful for the birds, Holly thanked them with a smile.',
+        image_prompt:
+          'A 5-year-old girl with pigtails, fair skin, and brown hair surrounded by a flock of colorful birds, all smiling happily.',
+        subject_description:
+          '{"Holly": "A 5-year-old girl with pigtails, fair skin, and brown hair."}',
+        image_url:
+          'https://svnatoofwyqiyenodtsq.supabase.co/storage/v1/object/public/images/248/4.png',
+      },
+    ],
   };
-  */
   const navigate = useNavigate();
 
   const navigateToCreate = () => {
@@ -138,65 +110,154 @@ const Home = () => {
       direction="column"
       alignItems="center"
       justifyContent="center"
-      m="3rem"
+      m="0rem"
       minHeight="80vh"
     >
-      {/* <Image
-        src={trackExample}
-        mt="5rem"
-        width={{ base: '90vw', md: '500px' }}
-      /> */}
+      <Image
+        src={heroBackground}
+        position="absolute"
+        width="min(1920px, 100%)"
+        objectFit="cover"
+        minHeight="100vh"
+        top="0"
+        margin="auto"
+        zIndex={-1}
+      />
       <VStack
-        mt="3rem"
         spacing="5"
-        px={{ base: '1rem', md: '1rem' }}
         alignItems={{ base: 'center' }}
         textAlign="center"
         position="relative"
       >
         {/* <SplineScene /> */}
-
-        <VStack
-          pt={{ base: '1rem', lg: '4rem' }}
-          spacing="10"
-          width={{ base: '100vw', sm: '60vw', md: '45vw' }}
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 50 }}
+          viewport={{ once: true }}
+          transition={{ ease: 'easeOut', duration: 1, delay: 1 }}
         >
-          <Heading as="h1" size="3xl">
-            Personalised, educational storybooks for your kid.
-          </Heading>
-          <Image
-            src={heroBackground}
-            position="absolute"
-            width="min(1920px, 100%)"
-            top="-10vw"
-            margin="auto"
-            zIndex={-1}
-            filter="drop-shadow(-5px 5px 5px #cccccc)"
-          />
-          <Text fontSize="lg" fontStyle="normal">
-            Are you a time-strapped working parent struggling to find quality
-            storytime for your child? Say goodbye to the frustration of
-            repetitive bedtime tales and the endless quest for the right book.
-            Start weaving your tales today.
-          </Text>
-          <Divider my="1rem" />
-          <Button variant="styled" onClick={navigateToCreate}>
-            Weave Story
-          </Button>
-        </VStack>
-        <Image
-          src={gradientDivider}
-          width="min(1920px, 100vw)"
-          mb="-5vw"
-          zIndex={-2}
-        />
-        <Text textAlign="center" fontSize="3xl" fontWeight="600">
-          The creative, guilt-free alternative to mindless screen-time.
-        </Text>
-        <SimpleThreeColumns />
+          <VStack
+            mt="3rem"
+            minHeight="60vh"
+            pt={{ base: '1rem', lg: '4rem' }}
+            spacing="10"
+            width={{ base: '100vw', sm: '60vw', md: '45vw' }}
+            position="relative"
+          >
+            <Heading
+              py="2rem"
+              color="white"
+              as="h1"
+              size="3xl"
+              textShadow="2px 2px 30px rgba(6, 20, 48, 0.7)"
+            >
+              Personalised, educational storybooks for your kid.
+            </Heading>
 
-        <SplitWithImage pt="5rem" />
-        <SplitWithMessage pt="5rem" />
+            <Text
+              color="white"
+              fontSize="lg"
+              fontStyle="normal"
+              textShadow="2px 2px 10px rgba(6, 20, 48, 0.7)"
+            >
+              Are you a time-strapped working parent struggling to find quality
+              storytime for your child? Say goodbye to the frustration of
+              repetitive bedtime tales and the endless quest for the right book.
+              Start weaving your tales today.
+            </Text>
+            <Button variant="styled" onClick={navigateToCreate}>
+              Create Story
+            </Button>
+          </VStack>
+        </motion.div>
+        <VStack spacing={-1}>
+          <Image
+            src={waves}
+            width="100vw"
+            sx={{
+              bottom: 0,
+              left: 0,
+              overflow: 'hidden',
+              lineHeight: 0,
+              transform: 'rotate(180deg)',
+            }}
+          />{' '}
+          <Box pt="3rem" bgColor="white" width="100vw">
+            <Text textAlign="center" fontSize="4xl" fontWeight="600" p="1rem">
+              Turn <span className="highlighted-text">imagination</span> into
+              reality.
+            </Text>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{
+                type: 'spring',
+                stiffness: 80,
+                duration: 0.5,
+                delay: 0.5,
+              }}
+            >
+              <Text
+                fontSize="2xl"
+                fontFamily="caveat"
+                my="1rem"
+                fontStyle="normal"
+              >
+                Generate a story about a girl who wants to fly.
+              </Text>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -100, scale: 0 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ ease: 'easeOut', duration: 1, delay: 1 }}
+            >
+              <Container bgColor="white" height="2xl" maxWidth="4xl" mb="1rem">
+                <FlipbookDisplay selectedStory={exampleStory} />
+              </Container>
+            </motion.div>
+          </Box>
+          <Text
+            maxWidth="1080px"
+            textAlign="center"
+            fontSize="4xl"
+            fontWeight="600"
+            p="1rem"
+          >
+            Discover your child's imaginative potential through{' '}
+            <span className="highlighted-text">
+              customized storytelling journeys
+            </span>
+            .
+          </Text>
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            whileInView={{ opacity: 1, y: 50 }}
+            viewport={{ once: true }}
+            transition={{ ease: 'easeOut', duration: 1, delay: 1 }}
+          >
+            <SimpleThreeColumns />
+          </motion.div>
+        </VStack>
+
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 50 }}
+          viewport={{ once: true }}
+          transition={{ ease: 'easeOut', duration: 1, delay: 1 }}
+        >
+          <SplitWithImage pt="5rem" />
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 50 }}
+          viewport={{ once: true }}
+          transition={{ ease: 'easeOut', duration: 1, delay: 1 }}
+        >
+          <SplitWithMessage pt="5rem" />{' '}
+        </motion.div>
         <PricingSection />
         <VStack
           spacing="5"
@@ -218,7 +279,7 @@ const Home = () => {
           </Text>
 
           <Button variant="styled" onClick={navigateToCreate}>
-            Weave Story
+            Create Story
           </Button>
           <Box>
             <Icon

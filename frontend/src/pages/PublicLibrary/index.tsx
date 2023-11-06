@@ -1,10 +1,12 @@
 import {
   Button,
-  Flex,
+  Card,
+  Heading,
   Box,
   Text,
   Modal,
   Container,
+  CardFooter,
   Tag,
   ModalOverlay,
   ModalContent,
@@ -17,14 +19,19 @@ import {
   Skeleton,
   VStack,
   Center,
-  Divider,
+  SimpleGrid,
   Spinner,
   HStack,
+  Icon,
 } from '@chakra-ui/react';
+import { useAuth } from '../../context/AuthProvider';
 import { useState, useEffect } from 'react';
 import HTMLFlipBook from 'react-pageflip';
 import FlipbookDisplay from '../../App/components/FlipbookDisplay';
 import { Story } from '../../App/components/FlipbookDisplay';
+import StoryCard from '../../App/components/StoryCard';
+import { useNavigate } from 'react-router-dom';
+import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
 
 // interface Story {
 //   storyid: number;
@@ -38,6 +45,8 @@ import { Story } from '../../App/components/FlipbookDisplay';
 // }
 
 const PublicLibrary = () => {
+  const { user } = useAuth();
+  const storageUrl = import.meta.env.VITE_STORAGE_URL;
   const [publicStories, setPublicStories] = useState<Story[]>([]);
   const [selectedStory, setSelectedStory] = useState<Story>(); // To store the selected story for viewing in the modal
   const [isModalOpen, setIsModalOpen] = useState(false); // To toggle the modal
@@ -47,12 +56,14 @@ const PublicLibrary = () => {
   const [storyBeingLoaded, setStoryBeingLoaded] = useState(-1);
 
   const onLoad = (storyId: Number) => {
-    setIsImageLoaded(prevImages => ([...prevImages, storyId]));
-  }
+    setIsImageLoaded((prevImages) => [...prevImages, storyId]);
+  };
 
   const getPublicStories = async () => {
     try {
-      const response = await fetch(`https://storage-api-46h8.onrender.com/get-public-stories`);
+      const response = await fetch(
+        `${storageUrl}/${user.id}/get-public-stories`,
+      );
       if (!response.ok) {
         console.log('Network response was not ok');
         return;
@@ -75,9 +86,7 @@ const PublicLibrary = () => {
     }
 
     try {
-      const response = await fetch(
-        `https://storage-api-46h8.onrender.com/${storyId}/get-story`,
-      );
+      const response = await fetch(`${storageUrl}/${storyId}/get-story`);
       if (!response.ok) {
         console.log('Network response was not ok');
         return;
@@ -120,18 +129,90 @@ const PublicLibrary = () => {
     story.title.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const handleIncreaseScore = async (story: Story) => {
+    try {
+      const response = await fetch(`${storageUrl}/increase-score`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          story_id: story.storyid,
+        }),
+      });
+      if (!response.ok) {
+        console.log('Network response was not ok');
+        return;
+      }
+      // set the latest score and userLiked
+      const data = await response.json();
+      const updatedStory = { ...story, score: data.score, userLiked: true };
+      setPublicStories((prevPublicStories) =>
+        prevPublicStories.map((prevStory) =>
+          prevStory.storyid === story.storyid ? updatedStory : prevStory,
+        ),
+      );
+    } catch (error) {
+      console.error('Error increasing score:', error);
+    }
+  };
+
+  const handleDecreaseScore = async (story: Story) => {
+    try {
+      const response = await fetch(`${storageUrl}/decrease-score`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.id,
+          story_id: story.storyid,
+        }),
+      });
+      if (!response.ok) {
+        console.log('Network response was not ok');
+        return;
+      }
+      // set the latest score and userLiked
+      const data = await response.json();
+      const updatedStory = { ...story, score: data.score, userLiked: false };
+      setPublicStories((prevPublicStories) =>
+        prevPublicStories.map((prevStory) =>
+          prevStory.storyid === story.storyid ? updatedStory : prevStory,
+        ),
+      );
+    } catch (error) {
+      console.error('Error decreasing score:', error);
+    }
+  };
+
   useEffect(() => {
     getPublicStories();
   }, []);
 
+  const navigate = useNavigate();
+
   return (
-    <Container minHeight="100vh">
-      <Input
-        type="text"
-        placeholder="Search by title..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
+    <Box
+      textAlign="center"
+      justifyContent="center"
+      margin="auto"
+      maxWidth="5xl"
+      minHeight="100vh"
+    >
+      <Heading mt="4rem" as="h1" py="1rem">
+        Public Gallery
+      </Heading>
+      <Box p="1rem">
+        <Input
+          maxWidth="500px"
+          type="text"
+          placeholder="Search by title..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </Box>
 
       {isLoading ? (
         <Stack spacing={5} mt="2rem">
@@ -143,76 +224,91 @@ const PublicLibrary = () => {
       ) : filteredStories.length === 0 ? (
         <Text>No stories available.</Text>
       ) : (
-        filteredStories.map((story, index) => (
-          <Flex
-            key={story.storyid}
-            borderWidth="1px"
-            borderRadius="5px"
-            m="1rem"
-            p="4"
-            direction="row"
-            justifyContent="space-between"
-          >
-            {' '}
-            <Box>
-              <VStack
-                flexDirection="row"
-                justifyContent="left"
-              >
-                <Image
-                  borderRadius="1rem"
-                  boxSize="25%"
-                  src={story.coverurl}
-                  alt={`Cover image for ${story.title}`}
-                  onLoad={() => onLoad(story.storyid)}
-                  style={{display: isImageLoaded.includes(story.storyid) ? 'block' : 'none'}}
+        <SimpleGrid minChildWidth="240px">
+          {filteredStories.map((story, index) => (
+            <Stack spacing={0}>
+              <StoryCard
+                key={story.storyid}
+                story={story}
+                handleViewStoryClick={() => navigate(`/story/${story.storyid}`)}
+                isLoadingImage={isImageLoaded.includes(story.storyid)}
+                storyBeingLoaded={storyBeingLoaded}
+              />
+              <HStack px="1rem" color="gray">
+                <Icon
+                  as={story.userLiked ? AiFillHeart : AiOutlineHeart}
+                  onClick={() => {
+                    // Optimistically update the UI before the fetch request
+                    const updatedStory = {
+                      ...story,
+                      userLiked: !story.userLiked,
+                      // Optionally, you can also optimistically update the score
+                      score: story.userLiked
+                        ? Math.max(0, story.score - 1)
+                        : story.score + 1,
+                    };
+
+                    setPublicStories((prevPublicStories) =>
+                      prevPublicStories.map((prevStory) =>
+                        prevStory.storyid === story.storyid
+                          ? updatedStory
+                          : prevStory,
+                      ),
+                    );
+
+                    // Call the respective handler function
+                    story.userLiked
+                      ? handleDecreaseScore(story)
+                      : handleIncreaseScore(story);
+                  }}
+                  color={story.userLiked ? 'red' : 'gray'}
+                  cursor="pointer"
+                  _hover={{
+                    background: 'transparent',
+                    transform: 'scale(1.5)',
+                    opacity: 1,
+                  }}
+                  transition="0.2s"
                 />
-                {!isImageLoaded.includes(story.storyid) && <Spinner />}
-
-                <HStack
-                  flexDirection="column"
-                  justifyContent="left"
-                  alignItems="left"
-                >
-                  <Text fontWeight="bold">
-                    {index + 1}. {story.title}
-                  </Text>
-
-                  <VStack
-                    flexDirection="row"
-                    justifyContent="left"
-                    alignItems="left"
-                  >
-                    <Tag m="3px" size={'sm'} variant="solid" colorScheme="teal">
-                      {story.moral}
-                    </Tag>
-                    <Tag m="3px" size={'sm'} variant="solid" colorScheme="orange">
-                      {story.genre}
-                    </Tag>
-                  </VStack>
-
-                  <Box>
-                    <Button
-                      margin="auto"
-                      onClick={() => handleViewStoryClick(story.storyid)}
-                    >
-                      {storyBeingLoaded === story.storyid && <Spinner mr="3px" />}
-                      View Story
-                    </Button>
-                  </Box>
-                </HStack>
-              </VStack>
-            </Box>
-          </Flex>
-        ))
+                <Text fontSize="sm">{story.score}</Text>
+              </HStack>
+            </Stack>
+          ))}
+        </SimpleGrid>
       )}
 
-      <Modal isOpen={isModalOpen} onClose={closeModal} size={'full'}>
-        <ModalOverlay />
-        <ModalContent maxW="100vw" maxH="100vh" overflow="hidden">
-          <ModalHeader>{selectedStory?.title}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        size={'full'}
+        scrollBehavior={'inside'}
+      >
+        <ModalContent
+          bg="rgba(0, 0, 0, 0.6)"
+          backdropFilter="contrast(98%) blur(5px)"
+        >
+          <ModalHeader textAlign="center" color="white" fontWeight="400">
+            {selectedStory?.title}
+          </ModalHeader>
+          <ModalCloseButton size="lg" color="white" />
+          <ModalBody overflowX="hidden" overflowY="scroll">
+            <style>
+              {`
+                /* Hide the scrollbar track and thumb */
+                ::-webkit-scrollbar {
+                  width: 0.5rem; /* Adjust the width as needed */
+                }
+                ::-webkit-scrollbar-track {
+                  background: transparent;
+                }
+                ::-webkit-scrollbar-thumb {
+                  background: transparent;
+                }
+
+                /* Hide the scrollbar in Firefox */
+                scrollbar-width: none;
+              `}
+            </style>
             <Center>
               <Container textAlign="center" maxW={'4xl'} py={12}>
                 <FlipbookDisplay selectedStory={selectedStory} />
@@ -221,7 +317,7 @@ const PublicLibrary = () => {
           </ModalBody>
         </ModalContent>
       </Modal>
-    </Container>
+    </Box>
   );
 };
 

@@ -6,13 +6,15 @@ import {
   Button,
   Stack,
   Collapse,
-  Icon,
+  VStack,
+  HStack,
   Popover,
   PopoverTrigger,
   PopoverContent,
   useColorModeValue,
   Container,
   useDisclosure,
+  Avatar,
 } from '@chakra-ui/react';
 import { Link } from 'react-router-dom';
 import {
@@ -27,6 +29,9 @@ import { DefaultLogo } from '../../DefautLogo';
 import { useAuth } from '../../../context/AuthProvider';
 import { routerType } from '../../../types/router.types';
 import pagesData from '../../../pages/pagesData';
+import QueueDisplay from '../QueueDisplay';
+import CreditsDisplay from '../CreditsDisplay';
+import SubscriptionDisplay from '../SubscriptionDisplay';
 
 export default function NavBar() {
   const { session, auth, user, signOut } = useAuth();
@@ -51,9 +56,9 @@ export default function NavBar() {
         position="fixed"
         top="0"
         w="100%"
-        backdropFilter="contrast(98%) blur(5px)"
+        backdropFilter="contrast(150%) blur(5px)"
         boxShadow="0px 0px 30px 0px rgba(0, 0, 0, 0.15)"
-        bg="rgba(255,255,255,0.5)"
+        bg="rgba(255,255,255,0.75)"
         color="gray.600"
         minH={'60px'}
         py={{ base: 2 }}
@@ -66,7 +71,6 @@ export default function NavBar() {
       >
         <Flex
           flex={{ base: 1, md: 'auto' }}
-          ml={{ base: -2 }}
           display={{ base: 'flex', md: 'none' }}
         >
           <IconButton
@@ -92,7 +96,40 @@ export default function NavBar() {
           direction={'row'}
           spacing={6}
         >
-          {!auth && (
+          {auth ? (
+            <>
+              <QueueDisplay />
+              <CreditsDisplay />
+              <Box fontSize={'sm'} fontWeight={400} textAlign="center">
+                <Link to={'/profile'}>
+                  <HStack justifyContent="flex-end">
+                    <Avatar bg="brand.orange" size="sm" />
+                    <VStack alignItems="flex-start" spacing={0}>
+                      <Text
+                        fontSize="sm"
+                        display={{ base: 'none', lg: 'inline-flex' }}
+                      >
+                        {user?.email}{' '}
+                      </Text>
+                      <SubscriptionDisplay
+                        display={{ base: 'none', md: 'inline-flex' }}
+                        size="sm"
+                      />
+                    </VStack>
+
+                    <Button
+                      display={{ base: 'none', md: 'inline-flex' }}
+                      fontSize={'sm'}
+                      fontWeight={400}
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </Button>
+                  </HStack>
+                </Link>
+              </Box>
+            </>
+          ) : (
             <>
               <Box margin={{ base: 'default', md: 'auto' }}>
                 <Link to={'/login'}>
@@ -126,31 +163,11 @@ export default function NavBar() {
               </Link>
             </>
           )}
-          {auth && (
-            <>
-              <Box
-                fontSize={'sm'}
-                fontWeight={400}
-                margin="auto"
-                textAlign="center"
-              >
-                {user?.email}
-              </Box>
-              <Button
-                display={{ base: 'none', md: 'inline-flex' }}
-                fontSize={'sm'}
-                fontWeight={400}
-                onClick={handleLogout}
-              >
-                Logout
-              </Button>
-            </>
-          )}
         </Stack>
       </Flex>
 
       <Collapse in={isOpen} animateOpacity>
-        <MobileNav />
+        <MobileNav handleLogout={handleLogout} />
       </Collapse>
     </Box>
   );
@@ -185,7 +202,7 @@ const DesktopNav = () => {
   );
 };
 
-const MobileNav = () => {
+const MobileNav = ({ handleLogout }: { handleLogout: () => void }) => {
   return (
     <Stack
       bg={useColorModeValue('white', 'gray.800')}
@@ -201,6 +218,15 @@ const MobileNav = () => {
         .map(({ path, title }: routerType, index) => (
           <MobileNavItem path={path} key={index} mykey={index} title={title} />
         ))}
+      <Button
+        p="1rem"
+        variant="solid"
+        fontSize={'sm'}
+        fontWeight={400}
+        onClick={handleLogout}
+      >
+        Logout
+      </Button>
     </Stack>
   );
 };

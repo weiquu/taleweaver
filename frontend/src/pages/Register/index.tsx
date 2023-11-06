@@ -19,6 +19,7 @@ import {
 import { useRef, useState } from 'react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { supabase } from '../../App/components/supabaseClient';
+import GoogleLoginButton from '../../App/components/GoogleLoginButton';
 
 //TODO: route this through backend
 async function getUserByEmail(email: string) {
@@ -55,12 +56,13 @@ export default function Register() {
       // Check if user exists
       const usersWithEmail = await getUserByEmail(email);
       if (usersWithEmail && usersWithEmail.length > 0) {
-        setErrorMsg('This email is already registered. Please login or reset password instead.');
+        setErrorMsg(
+          'This email is already registered. Please login or reset password instead.',
+        );
         setLoading(false);
         return;
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.log(error);
       setErrorMsg('Error in Creating Account');
     }
@@ -88,7 +90,7 @@ export default function Register() {
   };
 
   return (
-    <Flex minH={'80vh'} align={'center'} justify={'center'}>
+    <Flex mt="4rem" minH={'80vh'} align={'center'} justify={'center'}>
       <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
         <Stack align={'center'}>
           <Heading fontSize={'4xl'} textAlign={'center'}>
@@ -148,7 +150,7 @@ export default function Register() {
                   </InputRightElement>
                 </InputGroup>
               </FormControl>
-              <Stack spacing={10} pt={2}>
+              <Stack spacing={4} pt={2}>
                 <Button
                   type="submit"
                   isLoading={loading}
@@ -162,6 +164,7 @@ export default function Register() {
                 >
                   Sign up
                 </Button>
+                <GoogleLoginButton isSignUp={true} />
               </Stack>
               <Stack pt={6}>
                 <Text align={'center'}>

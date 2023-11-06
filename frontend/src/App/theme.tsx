@@ -4,6 +4,19 @@ const theme = extendTheme({
   initialColorMode: 'light',
   useSystemColorMode: false,
   components: {
+    Alert: {
+      baseStyle: (props) => {
+        const baseProps = {
+          container: {
+            borderRadius: '10px',
+          },
+        };
+        return {
+          ...baseProps,
+        };
+      },
+    },
+
     Input: {
       defaultProps: {
         focusBorderColor: 'brand.orange',
@@ -46,7 +59,7 @@ const theme = extendTheme({
           boxSizing: 'border-box',
           fontFamily: '-apple-system, sans-serif',
           fontSize: '1.2rem',
-          fontWeight: '700',
+          fontWeight: '600',
           letterSpacing: '-.24px',
           margin: 0,
           outline: 'none',

@@ -1,0 +1,14 @@
+{
+    "ignoreCommand": "git diff HEAD^ HEAD --quiet .",
+    "functions": {
+        "api/**/*": {
+            "maxDuration": 200
+        }
+    },
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/api/main.py"
+        }
+    ]
+}

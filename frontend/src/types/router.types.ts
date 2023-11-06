@@ -4,4 +4,5 @@ export interface routerType {
   element: JSX.Element;
   authRequired: boolean;
   mainNav: boolean;
+  inSession: boolean;
 }

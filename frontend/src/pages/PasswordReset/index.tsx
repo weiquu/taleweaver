@@ -54,7 +54,7 @@ export default function PasswordReset() {
   };
 
   return (
-    <Flex minH={'80vh'} align={'center'} justify={'center'}>
+    <Flex mt="4rem" minH={'80vh'} align={'center'} justify={'center'}>
       <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
         <Stack align={'center'}>
           <Heading fontSize={'4xl'} textAlign={'center'}>

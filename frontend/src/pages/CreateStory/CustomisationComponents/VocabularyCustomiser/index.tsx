@@ -13,15 +13,11 @@ import {
 interface VocabularyCustomiserProps {
   setAge: (age: number) => void;
   age: number;
-  isActive: boolean;
-  onToggleActive: (state: boolean) => void;
 }
 
 export const VocabularyCustomiser: React.FC<VocabularyCustomiserProps> = ({
   age,
   setAge,
-  isActive,
-  onToggleActive,
 }) => {
   const handleSliderChange = (newValue: number) => {
     // Call the callback function to set the age
@@ -38,18 +34,9 @@ export const VocabularyCustomiser: React.FC<VocabularyCustomiserProps> = ({
       flexDirection={{ base: 'column', md: 'row' }}
       align="stretch"
     >
-      <Checkbox
-        onChange={(e) => {
-          onToggleActive(!isActive);
-        }}
-        isChecked={isActive}
-        width="200px"
-        m="1rem"
-      >
-        <Text as="b" p="1rem">
-          Vocabulary:
-        </Text>
-      </Checkbox>
+      <Text as="b" p="1rem">
+        Vocabulary:
+      </Text>
       <Box
         width={{ base: '100%', sm: '70%' }}
         flexGrow={1}
@@ -61,7 +48,6 @@ export const VocabularyCustomiser: React.FC<VocabularyCustomiserProps> = ({
           <Text>{age} years</Text>
         </Box>
         <Slider
-          isDisabled={!isActive}
           aria-label="slider-ex-2"
           id="slider"
           defaultValue={age}

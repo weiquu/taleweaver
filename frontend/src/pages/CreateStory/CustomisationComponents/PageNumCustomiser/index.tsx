@@ -13,15 +13,11 @@ import {
 interface PageNumCustomiserProps {
   setPageNum: (pageNum: number) => void;
   pageNum: number;
-  isActive: boolean;
-  onToggleActive: (state: boolean) => void;
 }
 
 export const PageNumCustomiser: React.FC<PageNumCustomiserProps> = ({
   pageNum,
   setPageNum,
-  isActive,
-  onToggleActive,
 }) => {
   const handleSliderChange = (newValue: number) => {
     // Call the callback function to set the age
@@ -38,18 +34,9 @@ export const PageNumCustomiser: React.FC<PageNumCustomiserProps> = ({
       flexDirection={{ base: 'column', md: 'row' }}
       align="stretch"
     >
-      <Checkbox
-        onChange={(e) => {
-          onToggleActive(!isActive);
-        }}
-        isChecked={isActive}
-        width="200px"
-        m="1rem"
-      >
-        <Text as="b" p="0.5rem">
-          Number of Pages:
-        </Text>
-      </Checkbox>
+      <Text as="b" p="1rem">
+        Number of Pages:
+      </Text>
       <Box
         width={{ base: '100%', sm: '70%' }}
         flexGrow={1}
@@ -61,12 +48,11 @@ export const PageNumCustomiser: React.FC<PageNumCustomiserProps> = ({
           <Text>{pageNum} pages</Text>
         </Box>
         <Slider
-          isDisabled={!isActive}
           aria-label="slider-ex-2"
           id="slider"
           defaultValue={pageNum}
-          min={5}
-          max={15}
+          min={4}
+          max={8}
           onChange={handleSliderChange}
         >
           <SliderTrack>

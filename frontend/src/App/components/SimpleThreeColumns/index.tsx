@@ -41,52 +41,59 @@ const Feature = ({ title, text, img }: FeatureProps) => {
 
 export default function SimpleThreeColumns() {
   return (
-    <Box p={4} width={{ base: '100vw', md: '80vw', lg: '60vw' }}>
-      <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 5, md: 20 }}>
-        <Feature
-          img={
-            <Image
-              src={safeIcon}
-              w={'80%'}
-              h={'80%'}
-              filter="drop-shadow(10px 10px 10px #eed4cd)"
-            />
-          }
-          title={'Guaranteed Safety'}
-          text={
-            'Peace of mind with moderated safety parameters, ensuring age-appropriate and safe storytelling.'
-          }
-        />
-        <Feature
-          img={
-            <Image
-              src={customisationIcon}
-              w={'80%'}
-              h={'80%'}
-              filter="drop-shadow(10px 10px 10px #eed4cd)"
-            />
-          }
-          title={'Customizable and Personalised'}
-          text={
-            'Feature your child as the hero of every story, choose a moral for your child to learn, or set an age-specific vocabulary setting.'
-          }
-        />
-        <Feature
-          img={
-            <Image
-              src={illustrationIcon}
-              w={'80%'}
-              h={'80%'}
-              objectFit="contain"
-              filter="drop-shadow(10px 10px 10px #eed4cd)"
-            />
-          }
-          title={'Unique Illustrations'}
-          text={
-            "Accompany our stories with beautiful imagery to stimulate your child's imagination."
-          }
-        />
-      </SimpleGrid>
-    </Box>
+    <Flex
+      bgColor="white"
+      width="100vw"
+      justifyContent="center"
+      alignItems="center"
+    >
+      <Box p={4} width={{ base: '100vw', md: '80vw', lg: '60vw' }}>
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 5, md: 20 }}>
+          <Feature
+            img={
+              <Image
+                src={safeIcon}
+                w={'80%'}
+                h={'80%'}
+                filter="drop-shadow(10px 10px 10px #eed4cd)"
+              />
+            }
+            title={'Guaranteed Safety'}
+            text={
+              'Peace of mind with moderated safety parameters, ensuring age-appropriate and safe storytelling.'
+            }
+          />
+          <Feature
+            img={
+              <Image
+                src={customisationIcon}
+                w={'80%'}
+                h={'80%'}
+                filter="drop-shadow(10px 10px 10px #eed4cd)"
+              />
+            }
+            title={'Customizable and Personalised'}
+            text={
+              'Feature your child as the hero of every story, choose a moral for your child to learn, or set an age-specific vocabulary setting.'
+            }
+          />
+          <Feature
+            img={
+              <Image
+                src={illustrationIcon}
+                w={'80%'}
+                h={'80%'}
+                objectFit="contain"
+                filter="drop-shadow(10px 10px 10px #eed4cd)"
+              />
+            }
+            title={'Unique Illustrations'}
+            text={
+              "Accompany our stories with beautiful imagery to stimulate your child's imagination."
+            }
+          />
+        </SimpleGrid>
+      </Box>
+    </Flex>
   );
 }

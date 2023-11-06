@@ -16,7 +16,8 @@ import {
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
-import { useAnalyticsEventTracker } from '../../App/hooks/useAnalyticsEventTracker'
+import { useAnalyticsEventTracker } from '../../App/hooks/useAnalyticsEventTracker';
+import GoogleLoginButton from '../../App/components/GoogleLoginButton';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -39,13 +40,16 @@ export default function Login() {
       if (showPasswordReset) {
         if (!email) {
           setErrorMsg('Please enter your email');
+          setLoading(false);
           return;
         }
         const { data, error } = await passwordReset(email);
         if (error) setErrorMsg(error.message);
+        setLoading(false);
       } else {
         if (!password || !email) {
           setErrorMsg('Please fill in the fields');
+          setLoading(false);
           return;
         }
         const {
@@ -53,11 +57,12 @@ export default function Login() {
           error,
         } = await login(email, password);
         if (error) setErrorMsg(error.message);
+        setLoading(false);
         if (user && session) navigate('/');
       }
     } catch (error) {
       setErrorMsg('Email or Password Incorrect');
-      eventTracker('login error', 'error')
+      eventTracker('login error', 'error');
     }
     setLoading(false);
   };
@@ -84,7 +89,7 @@ export default function Login() {
   // };
 
   return (
-    <Flex minH={'80vh'} align={'center'} justify={'center'}>
+    <Flex mt="4rem" minH={'80vh'} align={'center'} justify={'center'}>
       <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
         <Stack align={'center'}>
           <Heading fontSize={'4xl'}>
@@ -144,7 +149,7 @@ export default function Login() {
                     {showPasswordReset && 'Back to Login'}
                   </Text>
                 </Stack>
-                <Stack spacing={5}>
+                <Stack spacing={3}>
                   <Button
                     type="submit"
                     color={'white'}
@@ -157,17 +162,7 @@ export default function Login() {
                     {!showPasswordReset && 'Sign In'}
                     {showPasswordReset && 'Reset'}
                   </Button>
-                  <Button
-                    m="0"
-                    as={'a'}
-                    fontSize={'sm'}
-                    fontWeight={400}
-                    variant={'link'}
-                    href={'/register'}
-                    display={{ base: 'inline-flex', md: 'none' }}
-                  >
-                    Register
-                  </Button>
+                  <GoogleLoginButton />
                 </Stack>
               </Stack>
               {errorMsg && (

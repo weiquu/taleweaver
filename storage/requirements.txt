@@ -9,3 +9,4 @@ anthropic
 datetime
 supabase==1.0.4
 requests
+stripe

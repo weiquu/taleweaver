@@ -3,17 +3,14 @@ import { Box, Text, Checkbox, HStack, Select } from '@chakra-ui/react';
 interface GenreCustomiserProps {
   setGenre: (values: string) => void;
   genre: string;
-  isActive: boolean;
-  onToggleActive: (state: boolean) => void;
 }
 
 export const GenreCustomiser: React.FC<GenreCustomiserProps> = ({
   setGenre,
   genre,
-  isActive,
-  onToggleActive,
 }) => {
   const genres = [
+    'Rhyming',
     'Adventure',
     'Fantasy',
     'Mystery',
@@ -22,7 +19,6 @@ export const GenreCustomiser: React.FC<GenreCustomiserProps> = ({
     'Animal Stories',
     'Humor',
     'Educational',
-    'Poetry',
   ];
 
   const handleSelectChange = (event: { target: { value: string } }) => {
@@ -40,23 +36,14 @@ export const GenreCustomiser: React.FC<GenreCustomiserProps> = ({
       flexDirection={{ base: 'column', md: 'row' }}
       align="stretch"
     >
-      <Checkbox
-        onChange={(e) => {
-          onToggleActive(!isActive);
-        }}
-        isChecked={isActive}
-        width="200px"
-        m="1rem"
-      >
-        <Text as="b" p="1rem">
-          Genre:
-        </Text>
-      </Checkbox>
+      <Text as="b" p="1rem">
+        Genre:
+      </Text>
       <Box flexGrow={10}>
         <Select
-          isDisabled={!isActive}
           onChange={handleSelectChange}
           placeholder="Choose a Genre"
+          defaultValue={genres[0]}
         >
           {genres.map((genre) => {
             return (

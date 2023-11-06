@@ -1,3 +1,6 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ],
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet ."
 }

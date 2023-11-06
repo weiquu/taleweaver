@@ -1,0 +1,70 @@
+.moving-image-container {
+    position: relative;
+    width: 100vw;
+    height: 120px;
+    overflow: hidden;
+}
+
+.animal-image {
+    width: 100px;
+    height: 100px;
+    left: 100%;
+    display: block;
+}
+
+.slideLeft {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    user-select: none; /* Prevent the image from being selected */
+    animation: moveLeft 8s linear, wobbleLeft 2s linear infinite 
+}
+
+.slideRight {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    user-select: none; /* Prevent the image from being selected */
+    animation: moveRight 8s linear, wobbleRight 2s linear infinite 
+}
+
+@keyframes wobbleLeft {
+    0% { 
+        transform: rotate(0deg); 
+    }
+    25% {
+        transform: rotate(-10deg); 
+    }
+    75% {
+        transform: rotate(10deg); 
+    }
+    100% {
+        transform: rotate(0deg); 
+    }
+}
+
+@keyframes wobbleRight {
+    0% { 
+        transform: scaleX(-1) rotate(0deg); 
+    }
+    25% {
+        transform: scaleX(-1) rotate(-10deg); 
+    }
+    75% {
+        transform: scaleX(-1) rotate(10deg); 
+    }
+    100% {
+        transform: scaleX(-1) rotate(0deg); 
+    }
+}
+
+@keyframes moveLeft {
+    0% { left: calc(100%); }
+    100% { left: -100px; }
+}
+
+@keyframes moveRight {
+    0% { left: -100px; }
+    100% { left: calc(100%); }
+}
+  

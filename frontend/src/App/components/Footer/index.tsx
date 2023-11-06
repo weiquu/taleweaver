@@ -1,5 +1,6 @@
 import {
   Box,
+  Flex,
   ButtonGroup,
   Container,
   Divider,
@@ -30,7 +31,7 @@ const ListHeader = ({ children }: { children: ReactNode }) => {
 
 const Footer = () => {
   return (
-    <Box bg="brand.dark" color="#eeeeee">
+    <Flex flexDirection="column" bg="brand.dark" color="#eeeeee" width="100%">
       <Divider />
       <Container as={Stack} maxW={'6xl'} py={10}>
         <SimpleGrid
@@ -46,7 +47,7 @@ const Footer = () => {
           <Stack align={'flex-start'}>
             <ListHeader>Links</ListHeader>
             <Link href={'/'}>Home</Link>
-            <Link href={'/create'}>Weave Story</Link>
+            <Link href={'/create'}>Create Story</Link>
             <Link href={'/my-library'}>My Library</Link>
             <Link href={'/public-library'}>Gallery</Link>
           </Stack>
@@ -86,7 +87,7 @@ const Footer = () => {
           </ButtonGroup>
         </SimpleGrid>
       </Container>
-    </Box>
+    </Flex>
   );
 };
 

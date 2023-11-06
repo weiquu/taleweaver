@@ -5,6 +5,7 @@ import AuthRoute from '../App/components/AuthRoute';
 import { useAuth } from '../context/AuthProvider';
 import { useEffect } from 'react';
 import ReactGA4 from 'react-ga4';
+import SessionRoute from '../App/components/SessionRoute';
 
 
 const Router = () => {
@@ -32,9 +33,18 @@ const Router = () => {
     },
   );
 
+  const routesNotAvailableWhenInSession = pagesData.map(
+    ({ path, title, element, inSession }: routerType) => {
+      return !inSession ? (
+        <Route key={title} path={`/${path}`} element={element} />
+      ) : null;
+    },
+  );
+
   return (
     <Routes>
       <Route element={<AuthRoute />}>{authPageRoutes}</Route>
+      <Route element={<SessionRoute />}>{routesNotAvailableWhenInSession}</Route>
       {pageRoutes}
     </Routes>
   );
