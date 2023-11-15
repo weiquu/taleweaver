@@ -42,8 +42,7 @@ export const GenreCustomiser: React.FC<GenreCustomiserProps> = ({
       <Box flexGrow={10}>
         <Select
           onChange={handleSelectChange}
-          placeholder="Choose a Genre"
-          defaultValue={genres[0]}
+          value={genre == '' ? genres[0] : genre}
         >
           {genres.map((genre) => {
             return (

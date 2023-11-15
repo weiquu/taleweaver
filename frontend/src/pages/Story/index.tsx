@@ -2,6 +2,7 @@ import {
   Container,
   Heading,
   HStack,
+  Text,
   Button,
   Modal,
   Stack,
@@ -18,12 +19,14 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { useState, useEffect } from 'react';
+import { BsFullscreen, BsCaretLeftFill } from 'react-icons/bs';
+import React from 'react';
+
 import FlipbookDisplay from '../../App/components/FlipbookDisplay';
 import { Story } from '../../App/components/FlipbookDisplay';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
-import { BsFullscreen, BsCaretLeftFill } from 'react-icons/bs';
-import React from 'react';
+import { useStory } from '../../App/hooks/useStory';
 
 const StoryPage = () => {
   const { user, session } = useAuth();
@@ -38,34 +41,19 @@ const StoryPage = () => {
 
   let navigate = useNavigate();
 
-  console.log('Story id:', storyId);
-
-  const getStory = async () => {
-    try {
-      console.log('JWT token:', session.access_token);
-      const response = await fetch(`${storageUrl}/${storyId}/get-story`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-      console.log('Response: ', response);
-      if (!response.ok) {
-        setError('No story found :(');
-        console.log('Network response was not ok');
-        return;
-      }
-      const data = await response.json();
-      const json_data = JSON.parse(data);
-
-      setStory(json_data);
-      setError('');
-    } catch (error) {
-      console.error('Error fetching story:', error);
-    }
-  };
+  const { data: storyData, refetch: refetchStory } = useStory(
+    session,
+    storyId,
+    setStory,
+    setError,
+  );
 
   useEffect(() => {
-    getStory().catch(console.error);
+    if (!storyData) {
+      refetchStory();
+    } else {
+      setStory(storyData);
+    }
   }, []);
 
   // Function to open the modal
@@ -107,15 +95,23 @@ const StoryPage = () => {
               label="View Fullscreen"
               bgColor="brand.orange80"
             >
-              <IconButton
-                size="md"
-                variant="ghost"
-                color="current"
-                marginLeft="2"
-                onClick={openModal}
-                icon={<BsFullscreen />}
-                aria-label={`Switch to fullscreen mode`}
-              />
+              <>
+                <IconButton
+                  size="md"
+                  variant="ghost"
+                  color="current"
+                  marginLeft="2"
+                  onClick={openModal}
+                  icon={<BsFullscreen />}
+                  aria-label={`Switch to fullscreen mode`}
+                />
+                <Text
+                  fontSize="sm"
+                  display={{ base: 'inline-block', md: 'none' }}
+                >
+                  View Fullscreen
+                </Text>
+              </>
             </Tooltip>
           )}
         </Stack>

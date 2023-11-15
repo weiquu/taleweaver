@@ -20,6 +20,7 @@ import {
   Tooltip,
   HStack,
   Select,
+  Icon,
 } from '@chakra-ui/react';
 import { useState, createRef, useEffect } from 'react';
 import BadWordsFilter from 'bad-words';
@@ -28,6 +29,7 @@ import { GenreCustomiser } from './CustomisationComponents/GenreCustomiser';
 import { ValuesCustomiser } from './CustomisationComponents/ValuesCustomiser';
 import { VocabularyCustomiser } from './CustomisationComponents/VocabularyCustomiser';
 import { PageNumCustomiser } from './CustomisationComponents/PageNumCustomiser';
+import { StyleCustomiser } from './CustomisationComponents/StyleCustomiser';
 import { generateRandomStory } from './utils/storygenerator';
 import { useAuth } from '../../context/AuthProvider';
 import FlipbookDisplay from '../../App/components/FlipbookDisplay';
@@ -37,31 +39,36 @@ import { useCredits } from '../../context/CreditProvider';
 import { useCurrentlyGeneratingStories } from '../../context/CurrentlyGeneratingStoriesProvider';
 import { useSubscription } from '../../context/SubscriptionProvider';
 import NoCreditsModal from '../../App/components/NoCreditsModal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { CurrentlyGeneratingStoriesObserver } from '../../context/subjects/CurrentlyGeneratingStoriesSubject';
+import { FaPenNib } from 'react-icons/fa';
 import './styles.css';
 
 const CreateStory = () => {
   const DEFAULT_NUM_PAGES = 5;
   const DEFAULT_VOCAB_AGE = 3;
-  const DEFAULT_VALUES = 'any';
-  const DEFAULT_GENRE = 'any';
+  const DEFAULT_VALUES = 'Friendship';
+  const DEFAULT_GENRE = 'Rhyming';
   const DEFAULT_NAME = '';
+  const DEFAULT_ARTSTYLE = 'watercolor';
   const DEFAULT_STORY_PROMPT = '';
   const DEFAULT_IS_STORY_RANDOM = false;
-  const DEFAULT_IS_PAGES_NUM_ACTIVE = false;
-  const DEFAULT_IS_VOCAB_ACTIVE = false;
-  const DEFAULT_IS_VALUES_ACTIVE = false;
-  const DEFAULT_IS_GENRE_ACTIVE = false;
+  const DEFAULT_IS_PAGES_NUM_ACTIVE = true;
+  const DEFAULT_IS_VOCAB_ACTIVE = true;
+  const DEFAULT_IS_VALUES_ACTIVE = true;
+  const DEFAULT_IS_GENRE_ACTIVE = true;
   const DEFAULT_IS_LOADING = false;
 
-  const { auth, user, signOut } = useAuth();
+  const { auth, user, signOut, session } = useAuth();
   const { credits } = useCredits();
-  const { currentlyGeneratingStories } = useCurrentlyGeneratingStories();
+  const { currentlyGeneratingStoriesSubjectSingleton } =
+    useCurrentlyGeneratingStories();
   const { subscription } = useSubscription();
   const genapiUrl = import.meta.env.VITE_GENAPI_URL;
   const storageUrl = import.meta.env.VITE_STORAGE_URL;
 
   const [selectedAvatar, setSelectedAvatar] = useState<Avatar | null>(null);
+  const [numGeneratingStories, setNumGeneratingStories] = useState(0);
 
   const [isPagesNumActive, setIsPagesNumActive] = useState(
     DEFAULT_IS_PAGES_NUM_ACTIVE,
@@ -80,12 +87,104 @@ const CreateStory = () => {
   const [isGenreActive, setIsGenreActive] = useState(DEFAULT_IS_GENRE_ACTIVE);
   const [genre, setGenre] = useState(DEFAULT_GENRE);
 
+  const [artstyle, setArtstyle] = useState(DEFAULT_ARTSTYLE);
+
   const [isLoading, setIsLoading] = useState(DEFAULT_IS_LOADING);
 
   const [storyPrompt, setStoryPrompt] = useState(DEFAULT_STORY_PROMPT);
   const [isStoryRandom, setIsStoryRandom] = useState(DEFAULT_IS_STORY_RANDOM);
 
   const [name, setName] = useState(DEFAULT_NAME);
+
+  const [error, setError] = useState<string>();
+  const [profanityMsg, setProfanityMsg] = useState<string>();
+  const { id } = useParams();
+  const [generationFailedReason, setGenerationFailedReason] =
+    useState<string>();
+  const [storyMetadataIsLoading, setStoryMetadataIsLoading] =
+    useState<boolean>(false);
+
+  const getStoryMetadata = async () => {
+    setStoryMetadataIsLoading(true);
+    if (id == null) {
+      return;
+    }
+    const storyId = parseInt(id!);
+    try {
+      // get story metadata
+      const response = await fetch(
+        `${storageUrl}/${storyId}/get-story-metadata`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        },
+      );
+      if (!response.ok) {
+        setError('No story found :(');
+        console.log('Network response was not ok');
+        return;
+      }
+      const data = await response.json();
+
+      // get reason for generation failure
+      const generationFailedReasonResponse = await fetch(
+        `${storageUrl}/${storyId}/get-story-generation-failure-reason`,
+        {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        },
+      );
+      if (!generationFailedReasonResponse.ok) {
+        setError('No story generation logs found :(');
+        console.log('Network response was not ok');
+        // do not quit, because its possible that the story does not have a generation log
+        // if it was generated before logs were implemented
+      } else {
+        const reasonData = await generationFailedReasonResponse.json();
+        setGenerationFailedReason(reasonData);
+        openGenerationFailureReason();
+      }
+
+      console.log(data);
+      setNumPages(data.numpages);
+      setVocabAge(data.age);
+      setValues(data.moral);
+      setGenre(data.genre);
+      setStoryPrompt(data.storyprompt);
+      setName(data.charactername);
+
+      setError('');
+    } catch (error) {
+      console.error('Error fetching story:', error);
+    }
+    setStoryMetadataIsLoading(false);
+  };
+
+  const onCurrentlyGeneratingStoriesChange: CurrentlyGeneratingStoriesObserver =
+    (stories: string[]) => {
+      setNumGeneratingStories(stories.length);
+    };
+
+  useEffect(() => {
+    if (id != null) {
+      getStoryMetadata().catch(console.error);
+    }
+
+    currentlyGeneratingStoriesSubjectSingleton.subscribe(
+      onCurrentlyGeneratingStoriesChange,
+    );
+    const latestData =
+      currentlyGeneratingStoriesSubjectSingleton.getLatestData();
+    setNumGeneratingStories(latestData.length);
+
+    // Unsubscribe the observer when the component unmounts
+    return () =>
+      currentlyGeneratingStoriesSubjectSingleton.unsubscribe(
+        onCurrentlyGeneratingStoriesChange,
+      );
+  }, []);
 
   const additionalAgeInfo = `The story should contain vocabulary as simple/complex as a ${vocabAge}-year-old could understand it.`;
   const additionalValuesInfo = `The moral of the story should teach ${values}.`;
@@ -110,6 +209,11 @@ const CreateStory = () => {
     onOpen: openSuccess,
   } = useDisclosure({ defaultIsOpen: false });
   const [isNoCreditsModalOpen, setIsNoCreditsModalOpen] = useState(false);
+  const {
+    isOpen: showGenerationFailureReason,
+    onClose: closeGenerationFailureReason,
+    onOpen: openGenerationFailureReason,
+  } = useDisclosure({ defaultIsOpen: false });
 
   var filter = new BadWordsFilter();
 
@@ -121,15 +225,17 @@ const CreateStory = () => {
       B. For each page, include an image prompt that is specific, as detailed as possible, creative, and matches the story of the page content.
          The subject(s) in the "image_prompt" should include the main character, what action he/she is doing, and with a descriptive setting or background.
          Also include a detailed description of each subject's physical appearance in the "subject_description".
-         The main character, ${selectedAvatar == null ? name : selectedAvatar?.name}, MUST appear in the TEXT of the story, the "image_prompt", and the "subject_description".
+         The main character, ${
+           selectedAvatar == null ? name : selectedAvatar?.name
+         }, MUST appear in the TEXT of the story, the "image_prompt", and the "subject_description".
       C. ${additionalAgeInfo} ${
         selectedAvatar == null ? additionalNameInfo : additionalAvatarInfo
       } ${
-        values != ""
+        values != ''
           ? additionalValuesInfo
           : 'The moral of the story should be only 1 or 2 words.'
       } ${
-        genre != ""
+        genre != ''
           ? additionalGenreInfo
           : 'The genre of the story should be only 1 or 2 words.'
       }
@@ -187,6 +293,7 @@ const CreateStory = () => {
         genre: genre,
         num_pages: numPages,
         name: name,
+        artstyle: artstyle,
       }),
     });
   };
@@ -206,6 +313,7 @@ const CreateStory = () => {
         story_id: storyId,
         system_prompt: getSystemPrompt(),
         user_prompt: getUserPrompt(),
+        artstyle: artstyle,
         context: '',
       }),
     });
@@ -213,7 +321,7 @@ const CreateStory = () => {
 
   const closeModal = () => {
     setIsNoCreditsModalOpen(false);
-  }
+  };
 
   const resetAllStates = () => {
     setIsPagesNumActive(DEFAULT_IS_PAGES_NUM_ACTIVE);
@@ -229,6 +337,7 @@ const CreateStory = () => {
     setIsStoryRandom(DEFAULT_IS_STORY_RANDOM);
     setName(DEFAULT_NAME);
     setIsNoCreditsModalOpen(false);
+    setProfanityMsg('');
   };
 
   /* HANDLERS */
@@ -241,7 +350,7 @@ const CreateStory = () => {
 
   const handleSubmit = async () => {
     // check if user can generate
-    if (credits - currentlyGeneratingStories.length <= 0) {
+    if (credits - numGeneratingStories <= 0) {
       console.log(subscription);
       setIsNoCreditsModalOpen(true);
       return;
@@ -249,6 +358,15 @@ const CreateStory = () => {
 
     if (filter.isProfane(storyPrompt) || filter.isProfane(name)) {
       // we do not increment gen failure if it fails here
+      if (filter.isProfane(storyPrompt)) {
+        setProfanityMsg(
+          "Hey, watch that! Please don't use profanities in your story prompt!",
+        );
+      } else {
+        setProfanityMsg(
+          'That name looks rude! Please use a name without profanities!',
+        );
+      }
       openAlert();
       return;
     }
@@ -293,14 +411,53 @@ const CreateStory = () => {
 
   return (
     <>
-      <NoCreditsModal isOpen={isNoCreditsModalOpen} onClose={closeModal} isPremium={subscription=="TURBO"} />
+      <NoCreditsModal
+        isOpen={isNoCreditsModalOpen}
+        onClose={closeModal}
+        isPremium={subscription == 'TURBO'}
+      />
       <Container mt="4rem" maxW={'2xl'} py={12}>
         <VStack
           flexGrow="1"
           px={{ base: '2rem', md: '0rem' }}
           alignItems={{ base: 'center' }}
         >
+          {storyMetadataIsLoading && (
+            <HStack>
+              <Spinner
+                thickness="4px"
+                speed="0.65s"
+                emptyColor="gray.200"
+                color="brand.orange"
+                size="sm"
+              />
+              <Text>Loading previous settings...</Text>
+            </HStack>
+          )}
           <Heading size="lg">Weave a story about...</Heading>
+          {showGenerationFailureReason && (
+            <ScaleFade initialScale={0.9} in={showGenerationFailureReason}>
+              <Alert
+                mt="1rem"
+                borderRadius="10px"
+                status="error"
+                variant="solid"
+              >
+                <AlertIcon />
+                <AlertDescription fontSize="sm">
+                  {generationFailedReason}
+                </AlertDescription>
+                <CloseButton
+                  textAlign="center"
+                  alignSelf="flex-start"
+                  position="relative"
+                  top={2}
+                  right={3}
+                  onClick={closeGenerationFailureReason}
+                />
+              </Alert>
+            </ScaleFade>
+          )}
           <VStack width="100%" alignItems={{ base: 'left' }}>
             <Textarea
               isDisabled={isStoryRandom}
@@ -318,7 +475,7 @@ const CreateStory = () => {
               variant="styled-color" //TODO: change to a different color from submit button
               onClick={handleRandomizePrompt}
             >
-              Give me a random story idea!
+              Random Story
             </Button>
           </VStack>
           <Heading size="lg" pt="2rem" p="1rem">
@@ -332,6 +489,8 @@ const CreateStory = () => {
             <GenreCustomiser genre={genre} setGenre={setGenre} />
             <Divider />
             <PageNumCustomiser pageNum={numPages} setPageNum={setNumPages} />
+            <Divider />
+            <StyleCustomiser artstyle={artstyle} setArtstyle={setArtstyle} />
           </VStack>
 
           <VStack>
@@ -355,11 +514,7 @@ const CreateStory = () => {
               variant="flushed"
             />
             {!showAlert && !showSuccess && (
-              <Button
-                m="1rem"
-                variant="styled-color"
-                onClick={handleSubmit}
-              >
+              <Button m="1rem" variant="styled-color" onClick={handleSubmit}>
                 Create Story
               </Button>
             )}
@@ -370,19 +525,19 @@ const CreateStory = () => {
                 thickness="4px"
                 speed="0.65s"
                 emptyColor="gray.200"
-                color="blue.500"
+                color="brand.orange"
                 size="xl"
               />
               {/* <AnimalImageCarousel /> */}
             </>
           )}
         </VStack>
-        {/* 
+
         {showAlert && (
           <ScaleFade initialScale={0.9} in={showAlert}>
             <Alert mt="1rem" borderRadius="10px" status="error" variant="solid">
               <AlertIcon />
-              <AlertDescription fontSize="sm">{errorMsg}</AlertDescription>
+              <AlertDescription fontSize="sm">{profanityMsg}</AlertDescription>
               <CloseButton
                 alignSelf="flex-start"
                 position="relative"
@@ -393,7 +548,7 @@ const CreateStory = () => {
             </Alert>
           </ScaleFade>
         )}
-        */}
+
         {showSuccess && (
           <ScaleFade initialScale={0.9} in={showSuccess}>
             <Alert
@@ -404,12 +559,14 @@ const CreateStory = () => {
             >
               <AlertIcon />
               <AlertDescription fontSize="sm">
-                Submission success!
+                Your story is currently being reviewed! You can monitor its
+                status on the top right, beside the{'  '}
+                <Icon as={FaPenNib} boxSize={5} mx="3px" />
+                {'  '}icon.
               </AlertDescription>
               <CloseButton
                 textAlign="center"
                 alignSelf="flex-start"
-                position="absolute"
                 top={2}
                 right={3}
                 onClick={closeSuccess}

@@ -8,7 +8,7 @@ interface WhiteColoredLogoProps extends ImageProps {
 }
 
 export const WhiteColoredLogo = forwardRef<WhiteColoredLogoProps, 'img'>(
-  ({ width = '160px', ...props }, ref) => {
+  ({ width = '180px', ...props }, ref) => {
     return <chakra.img src={logo} ref={ref} width={width} {...props} />;
   },
 );

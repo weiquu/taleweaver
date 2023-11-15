@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useCredits } from '../../../context/CreditProvider';
 import { useAuth } from '../../../context/AuthProvider';
 import { FaCoins } from 'react-icons/fa';
+import { motion } from 'framer-motion';
 
 export default function CreditsDisplay() {
   const { credits } = useCredits();
@@ -14,19 +15,25 @@ export default function CreditsDisplay() {
   }, [user]);
 
   return (
-    <Tooltip
-      label="Number of stories you can generate!"
-      hasArrow
-      bgColor="brand.orange80"
+    <motion.div
+      initial={{ scale: 0, opacity: 0 }} // Initial state of the component
+      animate={{ scale: 1, opacity: 1 }} // Animate to full size and opacity
+      transition={{ duration: 0.5, type: 'spring', stiffness: 80 }} // Duration of the animation
     >
-      <HStack>
-        {credits != -Infinity && (
-          <>
-            <Icon as={FaCoins} />
-            <Text>{credits}</Text>
-          </>
-        )}
-      </HStack>
-    </Tooltip>
+      <Tooltip
+        label="Number of stories you can generate!"
+        hasArrow
+        bgColor="brand.orange80"
+      >
+        <HStack height="100%">
+          {credits != -Infinity && (
+            <>
+              <Icon as={FaCoins} />
+              <Text>{credits}</Text>
+            </>
+          )}
+        </HStack>
+      </Tooltip>
+    </motion.div>
   );
 }

@@ -1,13 +1,15 @@
-import '@fontsource/inter/300.css';
-import '@fontsource/inter/400.css';
-import '@fontsource/inter/500.css';
+import '@fontsource/kumbh-sans/300.css';
+import '@fontsource/kumbh-sans/400.css';
+import '@fontsource/kumbh-sans/500.css';
 import '@fontsource/calistoga/400.css';
 import '@fontsource/caveat/400.css';
+import '@fontsource/paytone-one/400.css';
 import './styles.css';
 
 import { Box, ChakraProvider } from '@chakra-ui/react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import Router from '../pages/router';
 import NavBar from './components/NavBar';
@@ -41,5 +43,6 @@ export const App = () => (
         </AuthProvider>
       </BrowserRouter>
     </ChakraProvider>
+    <ReactQueryDevtools initialIsOpen={true} />
   </QueryClientProvider>
 );

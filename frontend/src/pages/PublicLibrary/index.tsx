@@ -24,14 +24,17 @@ import {
   HStack,
   Icon,
 } from '@chakra-ui/react';
-import { useAuth } from '../../context/AuthProvider';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import HTMLFlipBook from 'react-pageflip';
-import FlipbookDisplay from '../../App/components/FlipbookDisplay';
-import { Story } from '../../App/components/FlipbookDisplay';
-import StoryCard from '../../App/components/StoryCard';
-import { useNavigate } from 'react-router-dom';
 import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
+
+import { useAuth } from '../../context/AuthProvider';
+import { Story } from '../../App/components/FlipbookDisplay';
+import { usePublicStories } from '../../App/hooks/usePublicStories';
+import FlipbookDisplay from '../../App/components/FlipbookDisplay';
+import StoryCard from '../../App/components/StoryCard';
+
 
 // interface Story {
 //   storyid: number;
@@ -55,55 +58,18 @@ const PublicLibrary = () => {
   const [isImageLoaded, setIsImageLoaded] = useState<Number[]>([]);
   const [storyBeingLoaded, setStoryBeingLoaded] = useState(-1);
 
+  const {
+    data: publicStoriesData,
+    error: publicStoriesError,
+    refetch: refetchPublicStories,
+  } = usePublicStories(user, (data) => {
+    setIsLoading(true);
+    setPublicStories(data);
+    setIsLoading(false);
+  });
+
   const onLoad = (storyId: Number) => {
     setIsImageLoaded((prevImages) => [...prevImages, storyId]);
-  };
-
-  const getPublicStories = async () => {
-    try {
-      const response = await fetch(
-        `${storageUrl}/${user.id}/get-public-stories`,
-      );
-      if (!response.ok) {
-        console.log('Network response was not ok');
-        return;
-      }
-      const data = await response.json();
-      setPublicStories(data);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error fetching public stories:', error);
-    }
-  };
-
-  const getStory = async (storyId: number) => {
-    const publicStory = publicStories.find(
-      (story) => story.storyid === storyId,
-    );
-    if (publicStory && publicStory.story != undefined) {
-      setSelectedStory(publicStory);
-      return;
-    }
-
-    try {
-      const response = await fetch(`${storageUrl}/${storyId}/get-story`);
-      if (!response.ok) {
-        console.log('Network response was not ok');
-        return;
-      }
-      const data = await response.json();
-      const json_data = JSON.parse(data);
-      setSelectedStory(json_data);
-      setPublicStories((prevPublicStories) =>
-        prevPublicStories.map((prevStory) =>
-          prevStory.storyid === storyId
-            ? { ...prevStory, story: json_data.story }
-            : prevStory,
-        ),
-      );
-    } catch (error) {
-      console.error('Error fetching story:', error);
-    }
   };
 
   // Function to open the modal
@@ -114,14 +80,6 @@ const PublicLibrary = () => {
   // Function to close the modal
   const closeModal = () => {
     setIsModalOpen(false);
-  };
-
-  const handleViewStoryClick = async (storyId: number) => {
-    // hmm if story being loaded is not -1, then we should not load the story?
-    setStoryBeingLoaded(storyId);
-    await getStory(storyId);
-    setStoryBeingLoaded(-1);
-    openModal();
   };
 
   // Filter stories based on the search query
@@ -187,11 +145,16 @@ const PublicLibrary = () => {
     }
   };
 
-  useEffect(() => {
-    getPublicStories();
-  }, []);
-
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!publicStoriesData) {
+      refetchPublicStories();
+    } else {
+      setPublicStories(publicStoriesData);
+      setIsLoading(false);
+    }
+  }, []);
 
   return (
     <Box
@@ -215,7 +178,7 @@ const PublicLibrary = () => {
       </Box>
 
       {isLoading ? (
-        <Stack spacing={5} mt="2rem">
+        <Stack spacing={5} mt="2rem" mx="1rem">
           <Skeleton height="60px" />
           <Skeleton height="60px" />
           <Skeleton height="60px" />
@@ -226,7 +189,7 @@ const PublicLibrary = () => {
       ) : (
         <SimpleGrid minChildWidth="240px">
           {filteredStories.map((story, index) => (
-            <Stack spacing={0}>
+            <Stack spacing={0} key={index}>
               <StoryCard
                 key={story.storyid}
                 story={story}

@@ -31,7 +31,7 @@ const ListHeader = ({ children }: { children: ReactNode }) => {
 
 const Footer = () => {
   return (
-    <Flex flexDirection="column" bg="brand.dark" color="#eeeeee" width="100%">
+    <Flex flexDirection="column" bg="rgb(226, 88, 18)" color="#eeeeee" width="100%">
       <Divider />
       <Container as={Stack} maxW={'6xl'} py={10}>
         <SimpleGrid

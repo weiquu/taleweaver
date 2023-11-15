@@ -52,9 +52,10 @@ export default function SplitWithMessage(props: any) {
           >
             SAFETY
           </Text>
-          <Heading color={'brand.dark'}>
+          <Text fontSize="4xl"
+            fontWeight="600" color={'brand.dark'}>
             We Strive for Safe, Secure, and Age-Appropriate Content
-          </Heading>
+          </Text>
           <Text color={'gray.500'} fontSize={'lg'}>
             Your child's safety is our top priority, and we've gone the extra
             mile to ensure that our content is a safe haven for young minds. We

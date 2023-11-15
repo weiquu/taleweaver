@@ -1,5 +1,14 @@
 import React from 'react';
-import { Box, Text, Image, Heading, Divider, VStack } from '@chakra-ui/react';
+import {
+  Box,
+  Text,
+  Image,
+  Heading,
+  Divider,
+  VStack,
+  Spinner,
+  Skeleton,
+} from '@chakra-ui/react';
 import { Carousel } from 'react-responsive-carousel';
 import 'react-responsive-carousel/lib/styles/carousel.min.css';
 import taleweaverIcon from '/src/images/taleweaver_icon_svg.svg';
@@ -82,6 +91,9 @@ const StoryCarousel: React.FC<StoryCarouselProps> = ({ selectedStory }) => {
               boxSize="100%"
               src={pageData.image_url}
               alt={pageData.image_prompt}
+              fallback={
+                <Skeleton borderRadius="10px" height="400px" width="400px" />
+              }
             />
             <Text fontSize="1rem" mt="1rem">
               {pageData.text}
@@ -132,7 +144,7 @@ const StoryCarousel: React.FC<StoryCarouselProps> = ({ selectedStory }) => {
               {selectedStory.title}
             </Heading>
             <Text opacity="0.5">made with </Text>
-            <WhiteColoredLogo width="160px !important" />
+            <WhiteColoredLogo width="180px !important" />
           </VStack>
 
           <Box

@@ -20,7 +20,8 @@ from api.supabase_api import get_user_from_email, get_users, get_stories_by_user
     is_story_done_generating, set_contentflagged, set_generationfailed, get_public_stories, get_story_by_id, save_users_story, \
     set_story_public_status, delete_story_by_id, add_avatar, edit_avatar, delete_avatar, get_avatar_by_id, get_avatars_by_userid, \
     handle_gen_success, handle_gen_failure, manage_subscription_status_change, get_credits_by_userid, get_story_character_name_from_db, \
-    increment_story_score, decrement_story_score, update_story_moral_and_genre, get_subscription_by_userid
+    increment_story_score, decrement_story_score, update_story_moral_and_genre, get_subscription_by_userid, get_story_metadata_from_db, \
+    get_reason_from_logs
 
 app = FastAPI()
 
@@ -48,6 +49,10 @@ def new_client():
     return create_client(url, key)
 
 supabase: Client = new_client()
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
 
 
 ############################## NULL GET REQUESTS ##############################
@@ -80,9 +85,11 @@ async def get_users_stories(user_id: str):
 async def get_failed_stories(user_id: str):
     return get_stories_by_user(supabase, user_id, generation_failed = True)
 
-@app.get("/{user_id}/get-flagged-stories")
-async def get_flagged_stories(user_id: str):
-    return get_stories_by_user(supabase, user_id, content_flagged = True)
+@app.get("/{user_id}/get-unsuccessful-stories")
+async def get_unsuccessful_stories(user_id: str):
+    flagged_stories = get_stories_by_user(supabase, user_id, content_flagged = True)
+    failed_stories = get_stories_by_user(supabase, user_id, generation_failed = True)
+    return flagged_stories + failed_stories
 
 @app.get("/{user_id}/num-generating-stories/")
 async def num_generating_stories(user_id: str):
@@ -91,18 +98,6 @@ async def num_generating_stories(user_id: str):
 @app.get("/{user_id}/currently-generating-stories/")
 async def currently_generating_stories(user_id: str):
     return get_stories_by_user(supabase, user_id, is_done_generating = False)
-    
-@app.get("/avatars/{user_id}")
-async def get_user_avatars(user_id: str):
-    # Call the get_avatars_by_userid function to retrieve avatars
-    avatars = get_avatars_by_userid(supabase, user_id)
-
-    # Check if avatars were found for the user
-    if not avatars:
-        raise HTTPException(status_code=404, detail="No avatars found for this user")
-
-    # Return the avatars as JSON response
-    return {"avatars": avatars}
 
 ############################## CREDITS / SUBSCRIPTION GET REQUESTS ##############################
 
@@ -154,6 +149,12 @@ async def get_story(story_id: int, authorization: str = Header(None)):
     # Return format: same return format as with the genapi
     return get_story_by_id(supabase, story_id)
 
+@app.get("/{story_id}/get-story-metadata")
+async def get_story_metadata(story_id: int, authorization: str = Header(None)):
+    user_client = new_client()
+    user_client.auth.session_token = authorization
+    return get_story_metadata_from_db(supabase, story_id)
+
 @app.get("/{story_id}/story-character-name")
 async def story_character_name(story_id: int):
     story = get_story_character_name_from_db(supabase, story_id)
@@ -186,6 +187,10 @@ async def set_generation_failed(story_id: int, failed: bool):
         "success": True
     }
 
+@app.get("/{story_id}/get-story-generation-failure-reason")
+async def get_story_generation_failure_reason(story_id: int):
+    return get_reason_from_logs(supabase, story_id)
+
 ############################## REQUEST MESSAGE CLASSES ##############################
 
 
@@ -215,6 +220,7 @@ class SaveStoryMetadataRequest(BaseModel):
     genre: str
     name: str
     num_pages: int
+    artstyle: str
 
 class SaveStoryPagesAndTitleRequest(BaseModel):
     story_id: int
@@ -222,8 +228,10 @@ class SaveStoryPagesAndTitleRequest(BaseModel):
     moral: str
     genre: str
     story: list
+    artstyle: str
 
 class GenerationLog(BaseModel):
+    story_id: int
     user_id: str
     success: bool
     result: str
@@ -270,7 +278,8 @@ async def save_story_metadata(request_data: SaveStoryMetadataRequest):
                                      request_data.genre,
                                      request_data.story_prompt,
                                      request_data.num_pages,
-                                     request_data.name)
+                                     request_data.name,
+                                     request_data.artstyle)
 
 @app.post("/save-story-pages-title-moral-genre")
 async def save_story_pages_title_moral_genre(request_data: SaveStoryPagesAndTitleRequest):
@@ -283,9 +292,9 @@ async def save_story_pages_title_moral_genre(request_data: SaveStoryPagesAndTitl
 async def log_generation(payload: GenerationLog):
     # Return format: {success: bool}
     if payload.success:
-        response = handle_gen_success(supabase, payload.user_id, payload.result, payload.prompt, payload.name, payload.reason)
+        response = handle_gen_success(supabase, payload.user_id, payload.result, payload.prompt, payload.name, payload.reason, payload.story_id)
     else:
-        response = handle_gen_failure(supabase, payload.user_id, payload.result, payload.prompt, payload.name, payload.reason)
+        response = handle_gen_failure(supabase, payload.user_id, payload.result, payload.prompt, payload.name, payload.reason, payload.story_id)
     print(f"Handle generation success/failure response: {response}")
     success = response > 0
     return {
@@ -295,7 +304,11 @@ async def log_generation(payload: GenerationLog):
 @app.post("/avatars/{user_id}")
 async def add_new_avatar(payload: AddAvatarPayload):    
     # Add a new avatar for the user
-    avatar_id = add_avatar(supabase, payload.user_id, payload.avatar_data)
+    try:
+        avatar_id = add_avatar(supabase, payload.user_id, payload.avatar_data)
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Avatar creation failed")
 
     return {"avatar_id": avatar_id}
 
@@ -347,10 +360,6 @@ async def delete_existing_avatar(avatar_id: int):
 async def get_user_avatars(user_id: str):
     # Call the get_avatars_by_userid function to retrieve avatars
     avatars = get_avatars_by_userid(supabase, user_id)
-
-    # Check if avatars were found for the user
-    if not avatars:
-        raise HTTPException(status_code=404, detail="No avatars found for this user")
 
     # Return the avatars as JSON response
     return {"avatars": avatars}

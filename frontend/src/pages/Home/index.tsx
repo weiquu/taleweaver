@@ -118,10 +118,11 @@ const Home = () => {
         position="absolute"
         width="min(1920px, 100%)"
         objectFit="cover"
-        minHeight="100vh"
+        minHeight="900px"
         top="0"
         margin="auto"
         zIndex={-1}
+        overflow="visible"
       />
       <VStack
         spacing="5"
@@ -146,19 +147,22 @@ const Home = () => {
           >
             <Heading
               py="2rem"
+              px="1rem"
               color="white"
-              as="h1"
-              size="3xl"
+              letterSpacing="0.2rem"
+              size={{ base: '2xl', md: '3xl' }}
               textShadow="2px 2px 30px rgba(6, 20, 48, 0.7)"
             >
               Personalised, educational storybooks for your kid.
             </Heading>
 
             <Text
+              px="1rem"
               color="white"
               fontSize="lg"
               fontStyle="normal"
               textShadow="2px 2px 10px rgba(6, 20, 48, 0.7)"
+              px="1rem"
             >
               Are you a time-strapped working parent struggling to find quality
               storytime for your child? Say goodbye to the frustration of
@@ -196,11 +200,12 @@ const Home = () => {
                 type: 'spring',
                 stiffness: 80,
                 duration: 0.5,
-                delay: 0.5,
+                delay: 0.2,
               }}
             >
               <Text
                 fontSize="2xl"
+                px="1rem"
                 fontFamily="caveat"
                 my="1rem"
                 fontStyle="normal"
@@ -212,7 +217,7 @@ const Home = () => {
               initial={{ opacity: 0, y: -100, scale: 0 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ ease: 'easeOut', duration: 1, delay: 1 }}
+              transition={{ ease: 'easeOut', duration: 1, delay: 0 }}
             >
               <Container bgColor="white" height="2xl" maxWidth="4xl" mb="1rem">
                 <FlipbookDisplay selectedStory={exampleStory} />
@@ -236,7 +241,7 @@ const Home = () => {
             initial={{ opacity: 0, y: 100 }}
             whileInView={{ opacity: 1, y: 50 }}
             viewport={{ once: true }}
-            transition={{ ease: 'easeOut', duration: 1, delay: 1 }}
+            transition={{ ease: 'easeOut', duration: 1, delay: 0.3 }}
           >
             <SimpleThreeColumns />
           </motion.div>
@@ -246,7 +251,7 @@ const Home = () => {
           initial={{ opacity: 0, y: 100 }}
           whileInView={{ opacity: 1, y: 50 }}
           viewport={{ once: true }}
-          transition={{ ease: 'easeOut', duration: 1, delay: 1 }}
+          transition={{ ease: 'easeOut', duration: 1, delay: 0.3 }}
         >
           <SplitWithImage pt="5rem" />
         </motion.div>
@@ -254,7 +259,7 @@ const Home = () => {
           initial={{ opacity: 0, y: 100 }}
           whileInView={{ opacity: 1, y: 50 }}
           viewport={{ once: true }}
-          transition={{ ease: 'easeOut', duration: 1, delay: 1 }}
+          transition={{ ease: 'easeOut', duration: 1, delay: 0.3 }}
         >
           <SplitWithMessage pt="5rem" />{' '}
         </motion.div>
@@ -281,7 +286,7 @@ const Home = () => {
           <Button variant="styled" onClick={navigateToCreate}>
             Create Story
           </Button>
-          <Box>
+          <Box display={{ base: 'none', md: 'inline-block' }}>
             <Icon
               as={Arrow}
               color={'gray.800'}
@@ -298,9 +303,10 @@ const Home = () => {
               top={'-75px'}
               transform={'rotate(10deg)'}
             >
-              Try it for free!
+              Try it!
             </Text>
           </Box>
+          <Box mb="4rem"></Box>
         </VStack>
       </VStack>
     </Flex>

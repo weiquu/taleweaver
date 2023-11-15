@@ -44,9 +44,10 @@ export default function SplitWithImage(props: any) {
           >
             CUSTOMISATION
           </Text>
-          <Heading color={'brand.dark'}>
+          <Text fontSize="4xl"
+            fontWeight="600" color={'brand.dark'}>
             Tailor your stories for vocabulary, values, and genre.
-          </Heading>
+          </Text>
           <Text color={'gray.500'} fontSize={'lg'}>
             Experience the power of personalized storytelling like never before
             with our app's versatile customization options. Craft stories that

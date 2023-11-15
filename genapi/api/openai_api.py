@@ -1,16 +1,19 @@
-import openai
+from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import json
 import requests
 import random
+import asyncio
+import httpx
+import time
 
 load_dotenv()  # Loads environment variables from .env file
 
-openai.api_key = os.environ.get("VITE_OPENAPI_KEY")
 MAX_REGENERATION_TRIES = 5
 STABILITY_API_KEY = os.environ.get("VITE_STABILITY_API_KEY")
 STORAGE_URL = os.environ.get("VITE_STORAGE_URL")
+client = OpenAI(api_key=os.environ.get("VITE_OPENAPI_KEY"))
 
 SUCCESS = "success"
 INAPPROPRIATE_CONTENT = "inappropriate content"
@@ -22,8 +25,9 @@ UNKNOWN_ERROR = "unknown error"
 
 
 # generates a story and saves it to db
-def generate_and_save(user_id: str, story_id: int, system_prompt: str, user_prompt: str) -> None:
+async def generate_and_save(user_id: str, story_id: int, system_prompt: str, user_prompt: str, artstyle: str) -> None:
     gen_logs_params = {
+        'story_id': story_id,
         'user_id': user_id,
         'success': True,
         'result': SUCCESS,
@@ -32,9 +36,9 @@ def generate_and_save(user_id: str, story_id: int, system_prompt: str, user_prom
         'reason': '',
     }
     try:
-        response = generate_response(system_prompt, user_prompt)
+        response = await generate_response(system_prompt, artstyle, user_prompt)
     except Exception as e:
-        if "Content Flagged:" in e.args[0]:
+        if "Content Flag" in e.args[0]:
             # set in 'stories' table contentflagged to true
             db_response= requests.get(f"{STORAGE_URL}/{story_id}/set-contentflagged/true")
 
@@ -72,9 +76,13 @@ def generate_and_save(user_id: str, story_id: int, system_prompt: str, user_prom
     
     # add story_id for saving to db
     responseJson["story_id"] = story_id
+    responseJson["artstyle"] = artstyle
     
     print("saving to db")
+    start = time.time()
     save_to_db(responseJson)
+    end = time.time()
+    print(f'SAVE TO DB TIME: {end - start}')
 
     characterName = story_character_name(story_id)
     gen_logs_params['name'] = characterName
@@ -84,15 +92,32 @@ def generate_and_save(user_id: str, story_id: int, system_prompt: str, user_prom
 # Exceptions:
 #  - Content Flagged
 #  - Max tries exceeded
-def generate_response(system_prompt: str, user_prompt: str) -> str:
+async def generate_response(system_prompt: str, artstyle: str, user_prompt: str) -> str:
     print(system_prompt)
     print(user_prompt)
     
+    start = time.time()
     text_json = generate_story_max_tries(system_prompt, user_prompt)
+    end = time.time()
+
+    text_generation_time = end - start
 
     pages = text_json["story"]
-    for page in pages:
-        page["image_url"] = generate_image_max_tries(page["image_prompt"])
+
+    start = time.time()
+    # wait for all images to be generated
+    generated_pages = await asyncio.gather(
+        *[generate_image_max_tries(page["image_prompt"], artstyle) for page in pages]
+    )
+    end = time.time()
+
+    image_generation_time = end - start
+
+    for i in range(len(generated_pages)):
+        pages[i]["image_url"] = generated_pages[i]
+
+    print(f'TEXT GENERATION TIME: {text_generation_time}')
+    print(f'IMAGE GENERATION TIME: {image_generation_time}')
 
     return json.dumps(text_json)
 
@@ -118,7 +143,7 @@ def generate_story_max_tries(system_prompt: str, user_prompt: str, max_tries: in
             continue
 
         if ("Content Flag" in text_response):
-            raise Exception("Content Flagged: " + text_response)
+            raise Exception(text_response)
 
         text_json = json.loads(text_response)
         print(f'Response: {text_json}')
@@ -144,15 +169,15 @@ def generate_story_max_tries(system_prompt: str, user_prompt: str, max_tries: in
 
 # Exceptions:
 #   - Max tries exceeded
-def generate_image_max_tries(prompt: str, max_tries: int = MAX_REGENERATION_TRIES) -> str:
+async def generate_image_max_tries(prompt: str, artstyle: str, max_tries: int = MAX_REGENERATION_TRIES) -> str:
     remaining_tries = max_tries
     image_url = None
     while image_url is None and remaining_tries > 0:
         # try generating image, if exception, retry
         try:
-            image_url = generate_image_from_prompt(prompt)
-        except:
-            print("Error in generating image, retrying...")
+            image_url = await generate_image_from_prompt(prompt, artstyle)
+        except Exception as e:
+            print(f"Error in generating image ({e}), retrying...")
             remaining_tries -= 1
             image_url = None
             continue
@@ -174,7 +199,7 @@ def generate_image_max_tries(prompt: str, max_tries: int = MAX_REGENERATION_TRIE
 def generate_story(system_prompt: str, user_prompt: str) -> str:
     print('Generating story')
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model = "gpt-3.5-turbo",
             # n = 1, => higher = generate multiple messages choices
             top_p = 0.8,
@@ -196,12 +221,11 @@ def generate_story(system_prompt: str, user_prompt: str) -> str:
                 # },
             ],
         )
-
     except Exception as e:
         print("Error in creating story:", str(e))
         raise Exception("Story generation error")
 
-    return response["choices"][0]["message"]["content"]
+    return response.choices[0].message.content
 
 def generate_avatar_from_prompt(prompt):
     print(f"openai_api: Generating image with prompt: '{prompt}'")
@@ -259,46 +283,51 @@ def generate_avatar_from_prompt(prompt):
 
 # Exceptions:
 #   - Image generation error
-def generate_image_from_prompt(prompt: str) -> str:
-    print(f"openai_api: Generating image with prompt: '{prompt}'")
+async def generate_image_from_prompt(prompt: str, artstyle: str) -> str:
+    print(f"openai_api: Generating image with prompt: '{prompt}', '{artstyle}'")
     api_host = 'https://api.stability.ai'
     engine_id = "stable-diffusion-xl-1024-v1-0"
 
+    # Setting timeout to None, since image generation can take a while
+    timeout = httpx.Timeout(60.0, read=None)
+
     # Making a POST request to the Stability API
-    response = requests.post(
-        f"{api_host}/v1/generation/{engine_id}/text-to-image",
-        headers={
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "Authorization": f"Bearer {STABILITY_API_KEY}"  # Using your defined STABILITY_API_KEY
-        },
-        json={
-            "text_prompts": [
-                {
-                    "text": f"{prompt} watercolor, storybook",
-                    "weight": 1
-                },
-                {
-                    "text": f"beautiful realistic eyes",
-                    "weight": 0.3
-                },
-                {
-                    "text": "text, watermark, low-quality, signature,\
-                        moiré pattern, downsampling, aliasing, distorted, \
-                        blurry, glossy, blur, jpeg artifacts, compression artifacts, \
-                        poorly drawn, low-resolution, bad, distortion, twisted, excessive, \
-                        exaggerated pose, exaggerated limbs, grainy, symmetrical, duplicate, \
-                        error, pattern, beginner, pixelated, fake, hyper, glitch, overexposed, \
-                        high-contrast, bad-contrast, poorly drawn hands, poorly rendered hands, mutated limbs",
-                    "weight": -0.7
-                }],
-            "cfg_scale": 7,
-            "height": 1024,
-            "width": 1024,
-            "samples": 1,
-            "steps": 20,
-        }
-    )
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            f"{api_host}/v1/generation/{engine_id}/text-to-image",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "Authorization": f"Bearer {STABILITY_API_KEY}"  # Using your defined STABILITY_API_KEY
+            },
+            json={
+                "text_prompts": [
+                    {
+                        "text": f"{prompt}, {artstyle}, storybook",
+                        "weight": 1
+                    },
+                    {
+                        "text": f"beautiful realistic eyes",
+                        "weight": 0.3
+                    },
+                    {
+                        "text": "text, watermark, low-quality, signature,\
+                            moiré pattern, downsampling, aliasing, distorted, \
+                            blurry, glossy, blur, jpeg artifacts, compression artifacts, \
+                            poorly drawn, low-resolution, bad, distortion, twisted, excessive, \
+                            exaggerated pose, exaggerated limbs, grainy, symmetrical, duplicate, \
+                            error, pattern, beginner, pixelated, fake, hyper, glitch, overexposed, \
+                            high-contrast, bad-contrast, poorly drawn hands, poorly rendered hands, mutated limbs",
+                        "weight": -0.7
+                    }],
+                "cfg_scale": 7,
+                "height": 1024,
+                "width": 1024,
+                "samples": 1,
+                "steps": 20,
+            },
+            timeout=timeout
+        )
 
     # Handling non-successful responses
     if response.status_code != 200:
@@ -307,19 +336,12 @@ def generate_image_from_prompt(prompt: str) -> str:
 
     # Extracting the base64 encoded image data and decoding it
     data = response.json()
+    print(f"response: {response}"[:40])
+    print(f"data: {data}"[:40])
+    
     img_data_base64 = data["artifacts"][0]["base64"]
 
     return f"data:image/png;base64,{img_data_base64}"
-
-    # print(data)
-
-    # if not os.path.exists('./static'):
-    #     os.makedirs('./static')
-
-    # # Saving the image locally
-    # img_name = f"./static/v1_txt2img_{prompt[:10]}.png"  # Naming the image using the first 10 chars of the prompt for uniqueness
-    # with open(img_name, "wb") as f:
-    #     f.write(img_data)
 
 
 ############################## HELPER FUNCTIONS ##############################
@@ -372,7 +394,7 @@ def generate_random_story() -> str:
     ]
     challenges = [
         "overcoming bedtime fears", "saving the day from a mischievous dragon", "helping a lost alien find its way home", "solving riddles and puzzles", "rescuing friends from a tricky situation",
-        "defeating an evil sorcerer", "finding a hidden treasure", "stopping an environmental disaster", "saving a mythical creature", "solving a mystery",
+        "defeating an evil sorcerer", "finding a hidden treasure", "saving a mythical creature", "solving a mystery",
         "bringing harmony to a divided world", "breaking a wicked spell", "rebuilding a broken kingdom", "breaking a curse", "finding the lost city of gold",
         "protecting a magical artifact", "stopping time from unraveling", "braving a haunted house", "saving a beloved creature", "bringing back the sun"
     ]

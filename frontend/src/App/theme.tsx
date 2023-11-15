@@ -44,6 +44,12 @@ const theme = extendTheme({
         colorScheme: 'orange',
       },
     },
+    Heading: {
+      baseStyle: {
+        letterSpacing: '2px',
+        textAlign: 'center',
+      },
+    },
     Button: {
       baseStyle: {
         fontStyle: 'normal',
@@ -135,13 +141,13 @@ const theme = extendTheme({
   styles: {
     global: {
       body: {
-        color: '200D08',
+        color: '#40211F',
       },
     },
   },
   colors: {
     brand: {
-      dark: '#200D08',
+      dark: '#40211F',
       orange: '#F96317',
       orange80: '#FF7833',
       yellow: '#FFC229',
@@ -150,8 +156,8 @@ const theme = extendTheme({
     },
   },
   fonts: {
-    heading: `'Inter', sans-serif`,
-    body: `'Inter', sans-serif`,
+    heading: `'Paytone One', sans-serif`,
+    body: `'Kumbh Sans', sans-serif`,
   },
 });
 

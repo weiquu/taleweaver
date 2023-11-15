@@ -63,8 +63,7 @@ export const ValuesCustomiser: React.FC<ValuesCustomiserProps> = ({
       <Box flexGrow={10}>
         <Select
           onChange={handleSelectChange}
-          placeholder="Choose a Moral"
-          defaultValue={morals[9]}
+          value={values == '' ? morals[9] : values}
         >
           {morals.map((moral) => {
             return (

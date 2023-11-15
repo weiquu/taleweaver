@@ -28,6 +28,14 @@ const pagesData: routerType[] = [
     inSession: true,
   },
   {
+    path: 'create/:id',
+    element: <CreateStory />,
+    title: 'Edit Story',
+    authRequired: true,
+    mainNav: false,
+    inSession: true,
+  },
+  {
     path: 'login',
     element: <Login />,
     title: 'Login',

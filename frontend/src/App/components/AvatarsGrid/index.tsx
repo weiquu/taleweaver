@@ -18,11 +18,13 @@ import {
   useDisclosure,
   ModalHeader,
 } from '@chakra-ui/react';
+import { useState, useEffect } from 'react';
+
 import { useAuth } from '../../../context/AuthProvider';
 import NewAvatar from '../NewAvatar';
-import { useState, useEffect } from 'react';
 import AddAvatarButton from './AddAvatarButton';
 import placeholderAvatar from '../../../images/placeholder_avatar.png';
+import { useAvatars } from '../../../App/hooks/useAvatars';
 
 interface AvatarsGridProps {
   key: number;
@@ -39,47 +41,49 @@ const AvatarsGrid: React.FC<AvatarsGridProps> = ({
   selectedAvatar,
 }) => {
   const { user } = useAuth();
-  const storageUrl = import.meta.env.VITE_STORAGE_URL;
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const [avatars, setAvatars] = useState();
   const [loadingAvatars, setLoadingAvatars] = useState(true);
 
-  const fetchAvatars = async (userId) => {
-    setLoadingAvatars(true);
-    try {
-      const response = await fetch(`${storageUrl}/avatars/${userId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.status === 404) {
-        setAvatars(null);
-        setLoadingAvatars(false);
-        return;
-      }
-
-      if (!response.ok) {
-        console.log(`Network response was not ok: ${response.statusText}`);
-        setLoadingAvatars(false);
-        return null;
-      }
-
-      const avatarData = await response.json();
-
-      setAvatars(avatarData.avatars);
+  async function avatarsResponseConsumer(status, ok, statusText, data) {
+    if (status === 404) {
+      setAvatars(null);
       setLoadingAvatars(false);
-    } catch (error) {
-      console.error('Error fetching avatars:', error);
+      return;
+    }
+
+    if (!ok) {
+      console.log(`Network response was not ok: ${statusText}`);
       setLoadingAvatars(false);
       return null;
     }
-  };
+
+    setAvatars(data.avatars);
+  }
+
+  function avatarsErrorConsumer(error) {
+    console.error('Error fetching avatars:', error);
+    setLoadingAvatars(false);
+    return null;
+  }
+
+  // Note: not use the refetch function, use the refetchAvatars function instead
+  const { data: avatarsData, refetch } = useAvatars(user.id, avatarsResponseConsumer, avatarsErrorConsumer);
+
+  async function refetchAvatars() {
+    setLoadingAvatars(true);
+    await refetch();
+    setLoadingAvatars(false);
+  }
 
   useEffect(() => {
-    fetchAvatars(user.id);
+    if (!avatarsData) {
+      refetchAvatars();
+    } else {
+      setAvatars(avatarsData.avatars);
+      setLoadingAvatars(false);
+    }
   }, [user.id]);
 
   return (
@@ -93,7 +97,8 @@ const AvatarsGrid: React.FC<AvatarsGridProps> = ({
           <Skeleton width="80px" height="80px" />
           <Skeleton width="80px" height="80px" />
         </SimpleGrid>
-      ) : avatars ? (
+      ) : (
+        <>
         <SimpleGrid
           columns={{ base: 2, md: 3 }}
           spacingX={{ base: '15px', md: '40px' }}
@@ -105,7 +110,7 @@ const AvatarsGrid: React.FC<AvatarsGridProps> = ({
             <AvatarCard
               key={avatar.avatarid}
               avatar={avatar}
-              fetchAvatars={fetchAvatars}
+              refetchAvatars={refetchAvatars}
               editable={editable}
               variant={variant}
               onSelectAvatar={onSelectAvatar}
@@ -114,10 +119,12 @@ const AvatarsGrid: React.FC<AvatarsGridProps> = ({
           ))}
           <AddAvatarButton onClick={onOpen} />
         </SimpleGrid>
-      ) : (
-        <Container p="3rem">
-          <Text>No avatars created yet!</Text>
+        { avatars?.length === 0 &&
+        <Container pb="2rem">
+          <Text>No avatars created yet! Create one by clicking on the '+' button above.</Text>
         </Container>
+        }
+        </>
       )}
 
       <Modal size="4xl" isOpen={isOpen} onClose={onClose}>
@@ -126,7 +133,7 @@ const AvatarsGrid: React.FC<AvatarsGridProps> = ({
           <ModalCloseButton />
           <ModalBody>
             <NewAvatar
-              fetchAvatars={() => fetchAvatars(user.id)}
+              refetchAvatars={refetchAvatars}
               closeModal={onClose}
             />
           </ModalBody>
@@ -150,7 +157,7 @@ export interface Avatar {
 
 export interface AvatarCardProps {
   avatar: Avatar;
-  fetchAvatars: () => void;
+  refetchAvatars: () => void;
   editable: boolean;
   variant: string;
   onSelectAvatar?: (avatar: Avatar) => void;
@@ -159,7 +166,7 @@ export interface AvatarCardProps {
 
 export const AvatarCard: React.FC<AvatarCardProps> = ({
   avatar,
-  fetchAvatars,
+  refetchAvatars,
   editable,
   variant,
   onSelectAvatar,
@@ -187,7 +194,7 @@ export const AvatarCard: React.FC<AvatarCardProps> = ({
       }
       // Avatar deleted successfully
       onClose();
-      fetchAvatars();
+      refetchAvatars();
       setDeleteLoading(false);
     } catch (error) {
       console.error('Error deleting avatar:', error);

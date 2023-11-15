@@ -3,6 +3,7 @@ import {
   Card,
   HStack,
   Heading,
+  Text,
   VStack,
   Tag,
   Button,
@@ -58,18 +59,18 @@ const StoryCard = ({
                   <Skeleton height="100px" width="100px" />
                 )} */}
 
-        <Heading
+        <Text
           size="md"
           fontWeight="bold"
           color="white"
           textShadow="2px 2px 10px #080808"
         >
           {story.title}
-        </Heading>
+        </Text>
 
         <VStack flexWrap="wrap" flexDirection="row" alignContent="center">
           {story.moral !== 'any' && (
-            <Tag m="3px" size={'sm'} variant="solid" colorScheme="teal">
+            <Tag m="3px" size={'sm'} variant="solid" colorScheme="pink">
               {story.moral}
             </Tag>
           )}

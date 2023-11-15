@@ -56,11 +56,11 @@ export default function PricingSection() {
     navigate('/create');
   };
   return (
-    <Box py={12}>
+    <Box py={12} width="80%">
       <VStack spacing={2} textAlign="center" py="1rem">
-        <Heading as="h1" fontSize="4xl">
+        <Text fontSize="4xl" fontWeight="600">
           Invest in safe, educational screentime.
-        </Heading>
+        </Text>
         <Text fontSize="lg" color={'gray.500'}>
           Create an account to access all our customisation features. Start with
           3 free stories.
@@ -73,7 +73,7 @@ export default function PricingSection() {
         //   customer-email={user?.email}
         // ></stripe-pricing-table>
         <stripe-pricing-table
-          pricing-table-id="prctbl_1O5Fs1LswuVFInXravTCgmdF"
+          pricing-table-id="prctbl_1OAoU4LswuVFInXryWM9l6EX"
           publishable-key="pk_live_51Nwv2ZLswuVFInXrYGR3Hr7arIMi0BYvKDiABfvfjT19I8eS3qciCQ2KxujehkoXiioF2BX58Lb1mcQYzwD9s2Xx000uX5Z2oX"
           customer-email={user?.email}
         ></stripe-pricing-table>
@@ -92,10 +92,10 @@ export default function PricingSection() {
               </Text>
               <HStack justifyContent="center">
                 <Text fontSize="3xl" fontWeight="600">
-                  S$
+                  $
                 </Text>
                 <Text fontSize="5xl" fontWeight="900">
-                  9
+                  19
                 </Text>
                 <Text fontSize="3xl" color="gray.500">
                   /month
@@ -118,7 +118,7 @@ export default function PricingSection() {
                 </ListItem>
                 <ListItem>
                   <ListIcon as={FaCheckCircle} color="green.500" />
-                  Feature-Your-Child feature
+                  Feature-Your-Child
                 </ListItem>
                 <ListItem>
                   <ListIcon as={FaCheckCircle} color="green.500" />2
@@ -160,10 +160,10 @@ export default function PricingSection() {
                 </Text>
                 <HStack justifyContent="center">
                   <Text fontSize="3xl" fontWeight="600">
-                    S$
+                    $
                   </Text>
                   <Text fontSize="5xl" fontWeight="900">
-                    19
+                    29
                   </Text>
                   <Text fontSize="3xl" color="gray.500">
                     /month
@@ -186,7 +186,7 @@ export default function PricingSection() {
                   </ListItem>
                   <ListItem>
                     <ListIcon as={FaCheckCircle} color="green.500" />
-                    Feature-Your-Child feature
+                    Feature-Your-Child
                   </ListItem>
                   <ListItem>
                     <ListIcon as={FaCheckCircle} color="green.500" />

@@ -195,13 +195,14 @@ def update_story_moral_and_genre(db: Client, story_id: int, moral: str, genre: s
       .execute()
 
 def save_story_metadata_to_db(db: Client, user_id: int, age: int, moral: str, genre: str, 
-                              story_prompt: str, num_pages: int, name: str, is_public: bool = False):
+                              story_prompt: str, num_pages: int, name: str, artstyle: str, is_public: bool = False):
     story_metadata = {
         "userid": user_id,
         "storyprompt": story_prompt,
         "age": age,
         "moral": moral,
         "genre": genre,
+        "artstyle": artstyle,
         "numpages": num_pages,
         "charactername": name,
         "ispublic": is_public,
@@ -209,6 +210,11 @@ def save_story_metadata_to_db(db: Client, user_id: int, age: int, moral: str, ge
     response = db.table('stories').insert(story_metadata).execute().model_dump_json()
     story_id = json.loads(response)['data'][0]['storyid']
     return story_id
+
+def get_story_metadata_from_db(db: Client, story_id: int):
+    story_metadata = db.table('stories').select('*').eq('storyid', story_id).execute().model_dump_json()
+    story_metadata = json.loads(story_metadata)['data'][0]
+    return story_metadata
 
 def save_story_title_to_db(db: Client, story_id: int, title: str):
     db.table('stories').update({'title': title}).eq('storyid', story_id).execute()
@@ -250,8 +256,17 @@ def set_generationfailed(db: Client, story_id: int, failed: bool):
         .execute()
     print(response)
 
-def insert_gen(db: Client, user_id: str, result: str, prompt: str, name: str, reason: str):
+def get_reason_from_logs(db: Client, story_id: int):
+    response = db.table('generations').select('reason').eq('storyid', story_id).execute().model_dump_json()
+    response = json.loads(response)
+    if response['data'] == []:
+        # this is Not Good
+        raise HTTPException(status_code=404, detail="Story generation log not found 😔")
+    return response['data'][0]['reason']
+
+def insert_gen(db: Client, user_id: str, result: str, prompt: str, name: str, reason: str, story_id: int):
     gen_info = {
+        "storyid": story_id,
         "userid": user_id,
         "result": result,
         "prompt": prompt,
@@ -262,17 +277,17 @@ def insert_gen(db: Client, user_id: str, result: str, prompt: str, name: str, re
     response = json.loads(response)['data'][0]['id']
     return response
 
-def handle_gen_success(db: Client, user_id: str, result: str, prompt: str, name: str, reason: str):
+def handle_gen_success(db: Client, user_id: str, result: str, prompt: str, name: str, reason: str, story_id: int):
     response = increment_gen_success(db, user_id)
     if response != 1:
         return 0
-    return insert_gen(db, user_id, result, prompt, name, reason)
+    return insert_gen(db, user_id, result, prompt, name, reason, story_id)
 
-def handle_gen_failure(db: Client, user_id: str, result: str, prompt: str, name: str, reason: str):
+def handle_gen_failure(db: Client, user_id: str, result: str, prompt: str, name: str, reason: str, story_id: int):
     response = increment_gen_failure(db, user_id)
     if response != 1:
         return 0
-    return insert_gen(db, user_id, result, prompt, name, reason)
+    return insert_gen(db, user_id, result, prompt, name, reason, story_id)
     
 
 def increment_gen_success(db: Client, user_id: str): # just return 1 if no error... supabase has no return for python rpc
@@ -331,6 +346,7 @@ def get_avatar_by_id(db: Client, avatar_id: int):
 
     # You can structure the response as needed based on your requirements
     avatar = {
+        # is image needed?
         "avatar_id": avatar_info['avatarid'],
         "owner_id": avatar_info['ownerid'],
         "name": avatar_info['name'],
@@ -373,11 +389,15 @@ def add_avatar(db: Client, owner_id: str, avatar_data: AvatarData):
         'gender': avatar_data.gender,
         'clothing_color': avatar_data.favoriteClothingColor
     }).execute().model_dump_json()
-    
-    print(response)
+
     avatar_id = json.loads(response)['data'][0]['avatarid']
+    image_url = save_avatar_image(db, avatar_id, avatar_data.avatarImage)
+    db.table('avatars').update({'image': image_url}).eq('avatarid', avatar_id).execute()
+
     return avatar_id
 
+
+# WARNING: edit_avatar is not accessible from the webpage as of 12/11/2023 - this function has not been tested
 def edit_avatar(db: Client, avatar_id: int, avatar_data: dict):
     """
     Edit an existing avatar in the database.
@@ -386,8 +406,10 @@ def edit_avatar(db: Client, avatar_id: int, avatar_data: dict):
     :param avatar_data: Dictionary containing updated avatar data
     :return: Updated avatar data
     """
+    delete_avatar_image(db, avatar_id)
+    image_url = save_avatar_image(db, avatar_id, avatar_data.avatarImage)
     response = db.table('avatars').update({
-        'image': avatar_data.avatarImage,
+        'image': image_url,
         'name': avatar_data.avatarName,
         'hair_color': avatar_data.hairColor,
         'ethnicity': avatar_data.ethnicity,
@@ -409,13 +431,53 @@ def delete_avatar(db: Client, avatar_id: int):
     """
     response = db.table('avatars').delete().eq('avatarid', avatar_id).execute().model_dump_json()
     
-    deleted_avatar_data = json.loads(response)['data'][0]
+    avatar_id = json.loads(response)['data'][0]['avatarid']
+
+    # Delete the avatar image from the bucket
+    delete_avatar_image(db, avatar_id)
     
     # Check if the avatar was deleted successfully
-    if deleted_avatar_data:
+    if avatar_id:
         return True
     else:
         return False
+
+
+# temp function for transferring avatar images from table to bucket
+'''
+def transfer_avatars(db: Client):
+    # get all the avatars from the old table
+    avatar_info = db.table('avatars').select('avatarid, image').execute().model_dump_json()
+    avatar_info = json.loads(avatar_info)['data']
+    # place each in avatars/avatar_id bucket
+    for avatar in avatar_info:
+        if avatar["image"].startswith("data:image/png;base64,"):
+            print(avatar["avatarid"])
+            try:
+                path = f'{avatar["avatarid"]}.png'
+                image_base64 = avatar["image"].split("base64,")[1]
+                image = base64.b64decode(image_base64)
+                db.storage.get_bucket('avatars').upload(path, image,{ 'content-type': 'image/png' })
+                image_url = db.storage.get_bucket('avatars').get_public_url(path)
+                db.table('avatars').update({'image': image_url}).eq('avatarid', avatar["avatarid"]).execute()
+            except Exception as e:
+                print(e)
+                return
+'''
+
+def save_avatar_image(db: Client, avatarid: int, image: str):
+    path = f'{avatarid}.png'
+    image_base64 = image.split("base64,")[1]
+    image = base64.b64decode(image_base64)
+    print("Saving avatar image to bucket...")
+    db.storage.get_bucket('avatars').upload(path, image, { 'content-type': 'image/png' })
+    image_url = db.storage.get_bucket('avatars').get_public_url(path)
+    return image_url
+
+def delete_avatar_image(db: Client, avatarid: int):
+    path = f'{avatarid}.png'
+    db.storage.get_bucket('avatars').remove(path)
+
 
 def create_or_retrieve_customer(db: Client, customer_id: str, email: str) -> str:
     # Retrieve the user's userid based on their email.

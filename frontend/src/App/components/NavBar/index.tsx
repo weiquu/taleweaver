@@ -8,6 +8,7 @@ import {
   Collapse,
   VStack,
   HStack,
+  Image,
   Popover,
   PopoverTrigger,
   PopoverContent,
@@ -32,10 +33,11 @@ import pagesData from '../../../pages/pagesData';
 import QueueDisplay from '../QueueDisplay';
 import CreditsDisplay from '../CreditsDisplay';
 import SubscriptionDisplay from '../SubscriptionDisplay';
+import taleweaverIcon from '/src/images/taleweaver_icon_svg.svg';
 
 export default function NavBar() {
   const { session, auth, user, signOut } = useAuth();
-  const { isOpen, onToggle } = useDisclosure();
+  const { isOpen, onToggle, onClose } = useDisclosure();
 
   const navigate = useNavigate();
 
@@ -47,6 +49,7 @@ export default function NavBar() {
     } catch (error) {
       console.log(error);
     }
+    onClose();
     navigate('/');
   };
 
@@ -82,10 +85,21 @@ export default function NavBar() {
             aria-label={'Toggle Navigation'}
           />
         </Flex>
-        <Flex flex={{ base: 1 }} justify={{ base: 'center', md: 'start' }}>
-          <DefaultLogo />
+        <Flex
+          flex={{ base: 1 }}
+          alignItems="center"
+          justify={{ base: 'center', md: 'start' }}
+        >
+          <DefaultLogo display={{ base: 'none', md: 'inline-block' }} />
+          <Image
+            alt="TaleWeaver icon"
+            src={taleweaverIcon}
+            height="30px"
+            px="1rem"
+            display={{ base: 'inline-block', md: 'none' }}
+          />
 
-          <Flex display={{ base: 'none', md: 'flex' }} ml={10}>
+          <Flex display={{ base: 'none', md: 'flex' }} ml={'1rem'}>
             <DesktopNav />
           </Flex>
         </Flex>
@@ -94,7 +108,7 @@ export default function NavBar() {
           flex={{ base: 1, md: 0 }}
           justify={'flex-end'}
           direction={'row'}
-          spacing={6}
+          spacing={4}
         >
           {auth ? (
             <>
@@ -167,7 +181,7 @@ export default function NavBar() {
       </Flex>
 
       <Collapse in={isOpen} animateOpacity>
-        <MobileNav handleLogout={handleLogout} />
+        <MobileNav handleLogout={handleLogout} session={session} onClickLink={onClose}/>
       </Collapse>
     </Box>
   );
@@ -202,7 +216,7 @@ const DesktopNav = () => {
   );
 };
 
-const MobileNav = ({ handleLogout }: { handleLogout: () => void }) => {
+const MobileNav = ({ handleLogout, session, onClickLink }: { handleLogout: () => void, session: any, onClickLink: () => void }) => {
   return (
     <Stack
       bg={useColorModeValue('white', 'gray.800')}
@@ -216,9 +230,9 @@ const MobileNav = ({ handleLogout }: { handleLogout: () => void }) => {
       {pagesData
         .filter(({ mainNav }: routerType) => mainNav)
         .map(({ path, title }: routerType, index) => (
-          <MobileNavItem path={path} key={index} mykey={index} title={title} />
+          <MobileNavItem path={path} key={index} mykey={index} title={title} onClick={onClickLink}/>
         ))}
-      <Button
+      {session && <Button
         p="1rem"
         variant="solid"
         fontSize={'sm'}
@@ -226,7 +240,7 @@ const MobileNav = ({ handleLogout }: { handleLogout: () => void }) => {
         onClick={handleLogout}
       >
         Logout
-      </Button>
+      </Button>}
     </Stack>
   );
 };
@@ -235,9 +249,10 @@ interface NavItem {
   path: string;
   mykey: number;
   title: string;
+  onClick: () => void;
 }
 
-const MobileNavItem = ({ path, mykey, title }: NavItem) => {
+const MobileNavItem = ({ path, mykey, title, onClick }: NavItem) => {
   return (
     <Stack key={mykey} spacing={4}>
       <Link
@@ -246,6 +261,7 @@ const MobileNavItem = ({ path, mykey, title }: NavItem) => {
         _hover={{
           textDecoration: 'none',
         }}
+        onClick={onClick}
       >
         <Text
           py={2}

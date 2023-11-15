@@ -39,7 +39,7 @@ const Profile = () => {
         <Heading as="h2" size="2xl" mb={4}>
           My Profile
         </Heading>
-        <VStack alignItems={'flex-start'}>
+        <VStack px="2rem" alignItems={'flex-start'}>
           <Heading as="h2" size="xl" mb={4}>
             Edit/Cancel Subscription
           </Heading>

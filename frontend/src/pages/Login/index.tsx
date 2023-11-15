@@ -92,16 +92,34 @@ export default function Login() {
     <Flex mt="4rem" minH={'80vh'} align={'center'} justify={'center'}>
       <Stack spacing={8} mx={'auto'} maxW={'lg'} py={12} px={6}>
         <Stack align={'center'}>
-          <Heading fontSize={'4xl'}>
+          <Heading textAlign="center" fontSize={'4xl'}>
             {!showPasswordReset && 'Sign in to your account'}
             {showPasswordReset && 'Reset your Password'}
           </Heading>
-          <Text fontSize={'lg'} color={'gray.600'}>
+          <Text
+            display={{ base: 'none', md: 'inline-block' }}
+            fontSize={'lg'}
+            color={'gray.600'}
+          >
             to enjoy all of our cool{' '}
             <Text as="span" color={'brand.orange'}>
               features
             </Text>{' '}
             ✌️
+          </Text>
+          <Text
+            display={{ base: 'inline-block', md: 'none' }}
+            fontSize={'lg'}
+            color={'gray.600'}
+          >
+            New here?{' '}
+            <Text
+              as="span"
+              color={'brand.orange'}
+              onClick={() => navigate('/register')}
+            >
+              Click here to signup!
+            </Text>{' '}
           </Text>
         </Stack>
         <Box rounded={'lg'} bg={'white'} boxShadow={'lg'} p={8}>

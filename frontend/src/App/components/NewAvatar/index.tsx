@@ -23,13 +23,13 @@ import { useState, useEffect } from 'react';
 import placeholderAvatar from '../../../images/placeholder_avatar.png';
 
 interface AvatarCustomisationComponentProps {
-  fetchAvatars: () => void; // Specify the type of fetchAvatars function
+  refetchAvatars: () => void; // Specify the type of refetchAvatars function
   closeModal: () => void; // Specify the type of closeModal function
 }
 
 const AvatarCustomisationComponent: React.FC<
   AvatarCustomisationComponentProps
-> = ({ fetchAvatars, closeModal }) => {
+> = ({ refetchAvatars, closeModal }) => {
   const { user } = useAuth();
   const genapiUrl = import.meta.env.VITE_GENAPI_URL;
   const storageUrl = import.meta.env.VITE_STORAGE_URL;
@@ -64,6 +64,9 @@ const AvatarCustomisationComponent: React.FC<
     onClose: onErrorClose,
     onOpen: onErrorOpen,
   } = useDisclosure({ defaultIsOpen: false });
+  const ERR_INPUT_FIELDS = 'Please fill in all input fields.';
+  const ERR_API_RESPONSE = 'Error in creating avatar - please try again later!';
+  const [errorMsg, setErrorMsg] = useState(ERR_INPUT_FIELDS);
 
   const {
     isOpen: isSuccess,
@@ -73,7 +76,7 @@ const AvatarCustomisationComponent: React.FC<
 
   const validateInputs = () => {
     if (
-      !avatarImage ||
+      Object.keys(avatarImage).length === 0 ||
       !avatarName ||
       !hairColor ||
       !ethnicity ||
@@ -82,6 +85,7 @@ const AvatarCustomisationComponent: React.FC<
       !gender ||
       !favoriteClothingColor
     ) {
+      setErrorMsg(ERR_INPUT_FIELDS);
       onErrorOpen();
       return false;
     }
@@ -97,6 +101,7 @@ const AvatarCustomisationComponent: React.FC<
       !gender ||
       !favoriteClothingColor
     ) {
+      setErrorMsg(ERR_INPUT_FIELDS);
       onErrorOpen();
       return false;
     }
@@ -131,12 +136,14 @@ const AvatarCustomisationComponent: React.FC<
       });
       if (!response.ok) {
         console.log(`Network response was not ok: ${response.statusText}`);
+        setErrorMsg(ERR_API_RESPONSE);
         setSubmitLoading(false);
+        onErrorOpen();
         return;
       }
       // Avatar added successfully
       console.log('Avatar added successfully');
-      fetchAvatars();
+      refetchAvatars();
       onSuccessOpen();
       closeModal();
       setSubmitLoading(false);
@@ -344,7 +351,7 @@ const AvatarCustomisationComponent: React.FC<
             <AlertIcon />
             <AlertTitle mr={2}>Oopsie!</AlertTitle>
             <AlertDescription>
-              Please fill in all input fields.
+              {errorMsg}
             </AlertDescription>
           </HStack>
           <CloseButton onClick={onErrorClose} />
