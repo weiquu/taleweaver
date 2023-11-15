@@ -23,6 +23,7 @@ import {
   Spinner,
   HStack,
   Icon,
+  Checkbox,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
@@ -51,12 +52,14 @@ const PublicLibrary = () => {
   const { user } = useAuth();
   const storageUrl = import.meta.env.VITE_STORAGE_URL;
   const [publicStories, setPublicStories] = useState<Story[]>([]);
+  const [filteredAndSortedStories, setFilteredAndSortedStories] = useState<Story[]>([]);
   const [selectedStory, setSelectedStory] = useState<Story>(); // To store the selected story for viewing in the modal
   const [isModalOpen, setIsModalOpen] = useState(false); // To toggle the modal
   const [searchQuery, setSearchQuery] = useState(''); // State for the search query
   const [isLoading, setIsLoading] = useState(true);
   const [isImageLoaded, setIsImageLoaded] = useState<Number[]>([]);
   const [storyBeingLoaded, setStoryBeingLoaded] = useState(-1);
+  const [sortBys, setSortBys] = useState<string[]>([]);
 
   const {
     data: publicStoriesData,
@@ -82,10 +85,63 @@ const PublicLibrary = () => {
     setIsModalOpen(false);
   };
 
+  useEffect(() => {
+    // set filtered stories
+    if (sortBys.length === 0) {
+      setFilteredAndSortedStories(getFilteredStories());
+    } else if (sortBys.length === 1) {
+      setFilteredAndSortedStories(getFilteredAndSortedStories(nameToFunctionMap[sortBys[0]]));
+    } else {
+      setFilteredAndSortedStories(getFilteredAndSortedStories(sortByScoreAndAlphabetical));
+    }
+  }, [publicStories, sortBys]);
+
+
   // Filter stories based on the search query
-  const filteredStories = publicStories.filter((story) =>
-    story.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const getFilteredAndSortedStories = (sortBy: (arg0: Story, arg1: Story) => number) => {
+    const filteredStories = publicStories.filter((story) =>
+      story.title.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+    return filteredStories.sort(sortBy);
+  };
+
+  const getFilteredStories = () => {
+    return publicStories.filter((story) =>
+      story.title.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  };
+
+  // TODO: write the following functions in a more extensible manner
+
+  const sortByScore = (a: Story, b: Story) => {
+    return b.score - a.score;
+  };
+
+  const sortByAlphabetical = (a: Story, b: Story) => {
+    return a.title.localeCompare(b.title);
+  }
+
+  const sortByScoreAndAlphabetical = (a: Story, b: Story) => {
+    if (b.score === a.score) {
+      return a.title.localeCompare(b.title);
+    }
+    return b.score - a.score;
+  }
+
+  const setSortBy = (checked: boolean, sortBy: string) => {
+    if (checked) {
+      setSortBys((prevSortBys) => [...prevSortBys, sortBy]);
+    } else {
+      setSortBys((prevSortBys) => prevSortBys.filter((prevSortBy) => prevSortBy !== sortBy));
+    }
+  };
+
+  const SCORE = 'Sort By Score';
+  const ALPHABETICAL = 'Sort By Alphabetical';
+  const nameToFunctionMap = {
+    'Sort By Score': sortByScore,
+    'Sort By Alphabetical': sortByAlphabetical,
+  };
 
   const handleIncreaseScore = async (story: Story) => {
     try {
@@ -167,15 +223,23 @@ const PublicLibrary = () => {
       <Heading mt="4rem" as="h1" py="1rem">
         Public Gallery
       </Heading>
-      <Box p="1rem">
-        <Input
+      <HStack p="1rem">
+        <Input mr="1rem"
           maxWidth="500px"
           type="text"
           placeholder="Search by title..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-      </Box>
+        <Stack spacing={5} direction='row'>
+          <Checkbox onChange={(e) => setSortBy(e.target.checked, SCORE)}>
+            Sort By Score
+          </Checkbox>
+          <Checkbox onChange={(e) => setSortBy(e.target.checked, ALPHABETICAL)}>
+            Sort By Alphabetical
+          </Checkbox>
+        </Stack>
+      </HStack>
 
       {isLoading ? (
         <Stack spacing={5} mt="2rem" mx="1rem">
@@ -184,11 +248,11 @@ const PublicLibrary = () => {
           <Skeleton height="60px" />
           <Skeleton height="60px" />
         </Stack>
-      ) : filteredStories.length === 0 ? (
+      ) : filteredAndSortedStories.length === 0 ? (
         <Text>No stories available.</Text>
       ) : (
         <SimpleGrid minChildWidth="240px">
-          {filteredStories.map((story, index) => (
+          {filteredAndSortedStories.map((story, index) => (
             <Stack spacing={0} key={index}>
               <StoryCard
                 key={story.storyid}

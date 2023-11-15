@@ -389,26 +389,25 @@ def generate_random_story() -> str:
     main_stories = [
         "exploring a magical forest", "finding confidence in a circus", "discovering a hidden treasure", "making new friends in an enchanted garden", "embarking on a treasure hunt",
         "solving a mystery in the jungle", "learning to fly with the birds", "unlocking a secret in an ancient cave", "traveling to the moon", "saving a kingdom from darkness",
-        "helping an injured animal", "rescuing lost souls", "meeting a time-traveling friend", "uncovering a hidden world", "finding a lost city",
-        "learning the secrets of the stars", "sailing the seven seas", "journeying to a parallel universe", "helping a fairy in distress", "meeting magical creatures"
+        "helping an injured animal", "rescuing lost souls", "uncovering a hidden world", "finding a lost city", "learning the secrets of the stars", "sailing the seven seas",
+        "helping a fairy in distress", "meeting magical creatures"
     ]
     challenges = [
         "overcoming bedtime fears", "saving the day from a mischievous dragon", "helping a lost alien find its way home", "solving riddles and puzzles", "rescuing friends from a tricky situation",
-        "defeating an evil sorcerer", "finding a hidden treasure", "saving a mythical creature", "solving a mystery",
-        "bringing harmony to a divided world", "breaking a wicked spell", "rebuilding a broken kingdom", "breaking a curse", "finding the lost city of gold",
-        "protecting a magical artifact", "stopping time from unraveling", "braving a haunted house", "saving a beloved creature", "bringing back the sun"
+        "finding a hidden treasure", "saving a mythical creature", "solving a mystery", "bringing harmony to a divided world", "rebuilding a broken kingdom", "finding the lost city of gold",
+        "protecting a magical artifact", "saving a beloved creature", "bringing back the sun"
     ]
     settings = [
         "in a whimsical circus", "in a candy kingdom", "on an uncharted island", "in a magical forest", "in an enchanted castle",
-        "in a futuristic city", "in an underwater world", "in a prehistoric land", "in a wild west town", "in a haunted mansion",
-        "in an ancient temple", "in a fairy tale village", "in a time-traveling laboratory", "in a steampunk city", "on a faraway planet",
-        "in a dreamy wonderland", "in a snowy kingdom", "in a tropical paradise", "in a whimsical garden", "in a mystical desert"
+        "in a futuristic city", "in an underwater world", "in a prehistoric land", "in a wild west town", "in an ancient temple",
+        "in a fairy tale village", "on a faraway planet", "in a dreamy wonderland", "in a snowy kingdom", "in a tropical paradise",
+        "in a whimsical garden", "in a mystical desert"
     ]
     supporting_characters = [
         "a friendly squirrel", "a wise old owl", "a mischievous pixie", "a kind-hearted pirate", "a playful mermaid",
         "a helpful gnome", "a talking parrot", "a loyal dog", "a magical genie", "a wise mentor",
         "a cheerful fairy", "a brave knight", "a misfit unicorn", "a talking teapot", "a curious ghost",
-        "a brave princess", "a wise hermit", "a mysterious traveler", "a helpful wizard", "a gentle giant"
+        "a brave princess", "a wise hermit", "a helpful wizard", "a gentle giant"
     ]
 
     # Basically a coin flip for each optional component to decide if it should be included
