@@ -10,7 +10,7 @@ sys.path.append(str(Path(__file__).parent.parent.parent))
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, BackgroundTasks
 from api.openai_api import generate_response, generate_random_story, generate_image_from_prompt, generate_avatar_from_prompt, \
-    generate_and_save
+    generate_and_save, generate_and_save_sync_wrapper
 
 app = FastAPI()
 
@@ -63,7 +63,7 @@ async def submit_story_generation_job(request_data: GenerationJobRequest, backgr
     system_prompt = request_data.system_prompt
     user_prompt = request_data.user_prompt
     artstyle = request_data.artstyle
-    background_tasks.add_task(generate_and_save, user_id, story_id, system_prompt, user_prompt, artstyle)
+    background_tasks.add_task(generate_and_save_sync_wrapper, user_id, story_id, system_prompt, user_prompt, artstyle)
     return {"message": "Story generation job submitted in the background"}
 
 class ImageRequest(BaseModel):

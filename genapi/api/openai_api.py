@@ -467,3 +467,6 @@ def validate_response(response_dict: dict) -> bool:
     return all(key in response_dict for key in top_level_keys) and \
            all(key in page for page in response_dict["story"] for key in story_page_keys) and \
            all(isinstance(page["subject_description"], dict) for page in response_dict["story"])
+
+def generate_and_save_sync_wrapper(user_id: str, story_id: int, system_prompt: str, user_prompt: str, artstyle: str) -> None:
+    asyncio.run(generate_and_save(user_id, story_id, system_prompt, user_prompt, artstyle))
