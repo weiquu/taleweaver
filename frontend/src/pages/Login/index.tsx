@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthProvider';
 import { useAnalyticsEventTracker } from '../../App/hooks/useAnalyticsEventTracker';
 import GoogleLoginButton from '../../App/components/GoogleLoginButton';
+import { Link } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -191,6 +192,12 @@ export default function Login() {
             </Stack>
           </form>
         </Box>
+        <Text textAlign="center" fontSize="sm" color="gray.400">
+          By continuing, you agree to our{' '}
+          <Link to={'/privacy'}>
+            <u>Privacy Policy</u>
+          </Link>
+        </Text>
       </Stack>
     </Flex>
   );

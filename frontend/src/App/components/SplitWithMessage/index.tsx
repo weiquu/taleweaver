@@ -29,7 +29,7 @@ const Feature = ({ text }: FeatureProps) => {
 
 export default function SplitWithMessage(props: any) {
   return (
-    <Container width="80vw" maxW={'7xl'} py={12} textAlign="left">
+    <Container width="80vw" maxW={'7xl'} pt={12} textAlign="left">
       <SimpleGrid {...props} columns={{ base: 1, md: 2 }} spacing={10}>
         <Flex>
           <Image
@@ -52,9 +52,8 @@ export default function SplitWithMessage(props: any) {
           >
             SAFETY
           </Text>
-          <Text fontSize="4xl"
-            fontWeight="600" color={'brand.dark'}>
-            We Strive for Safe, Secure, and Age-Appropriate Content
+          <Text fontSize="4xl" fontWeight="600" color={'brand.dark'}>
+            Feature your child as the hero.
           </Text>
           <Text color={'gray.500'} fontSize={'lg'}>
             Your child's safety is our top priority, and we've gone the extra
@@ -75,7 +74,7 @@ export default function SplitWithMessage(props: any) {
           >
             <Feature text={'Profanity-Free'} />
             <Feature text={'Maturity-Theme Filters'} />
-            <Feature text={'Age-Specific Content'} />
+            <Feature text={'Characters that look just like your child!'} />
           </Stack>
         </Stack>
       </SimpleGrid>

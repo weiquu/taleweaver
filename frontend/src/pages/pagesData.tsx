@@ -7,6 +7,8 @@ import Register from './Register';
 import PasswordReset from './PasswordReset';
 import MyLibrary from './MyLibrary';
 import PublicLibrary from './PublicLibrary';
+import Pricing from './Pricing';
+import PrivacyPolicy from './PrivacyPolicy';
 import StoryPage from './Story';
 import Profile from './Profile';
 
@@ -76,6 +78,14 @@ const pagesData: routerType[] = [
     inSession: true,
   },
   {
+    path: 'pricing',
+    element: <Pricing />,
+    title: 'Pricing',
+    authRequired: false,
+    mainNav: true,
+    inSession: true,
+  },
+  {
     path: 'story/:id',
     element: <StoryPage />,
     title: 'Story',
@@ -88,6 +98,14 @@ const pagesData: routerType[] = [
     element: <Profile />,
     title: 'Profile',
     authRequired: true,
+    mainNav: false,
+    inSession: true,
+  },
+  {
+    path: 'privacy',
+    element: <PrivacyPolicy />,
+    title: 'Privacy Policy',
+    authRequired: false,
     mainNav: false,
     inSession: true,
   },

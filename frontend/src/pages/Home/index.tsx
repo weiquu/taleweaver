@@ -1,8 +1,8 @@
 import {
   createIcon,
   Button,
-  CloseButton,
-  Divider,
+  Alert,
+  AlertIcon,
   Flex,
   Heading,
   Image,
@@ -34,6 +34,8 @@ import SplineScene from '../../App/components/SplineScene';
 import PricingSection from '../../App/components/PricingSection';
 import FlipbookDisplay from '../../App/components/FlipbookDisplay';
 import './styles.css';
+import Testimonials from '../../App/components/Testimonials';
+import FAQDisplay from '../../App/components/FAQDisplay';
 
 const Home = () => {
   const exampleStory = {
@@ -93,6 +95,11 @@ const Home = () => {
     navigate('/create');
   };
 
+  const navigateToPricing = () => {
+    // 👇️ navigate to /contacts
+    navigate('/pricing');
+  };
+
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -124,6 +131,21 @@ const Home = () => {
         zIndex={-1}
         overflow="visible"
       />
+      <Alert
+        position="absolute"
+        justifyContent="center"
+        top="60px"
+        fontSize="sm"
+        colorScheme="purple"
+        height="30px"
+        fontWeight="500"
+        status="info"
+        borderRadius="0"
+        onClick={navigateToPricing}
+      >
+        <AlertIcon />
+        Use code "HOLIDAY25" to enjoy 25% off all subscriptions!
+      </Alert>
       <VStack
         spacing="5"
         alignItems={{ base: 'center' }}
@@ -162,7 +184,6 @@ const Home = () => {
               fontSize="lg"
               fontStyle="normal"
               textShadow="2px 2px 10px rgba(6, 20, 48, 0.7)"
-              px="1rem"
             >
               Are you a time-strapped working parent struggling to find quality
               storytime for your child? Say goodbye to the frustration of
@@ -184,6 +205,7 @@ const Home = () => {
               overflow: 'hidden',
               lineHeight: 0,
               transform: 'rotate(180deg)',
+              zIndex: -1,
             }}
           />{' '}
           <Box pt="3rem" bgColor="white" width="100vw">
@@ -246,15 +268,6 @@ const Home = () => {
             <SimpleThreeColumns />
           </motion.div>
         </VStack>
-
-        <motion.div
-          initial={{ opacity: 0, y: 100 }}
-          whileInView={{ opacity: 1, y: 50 }}
-          viewport={{ once: true }}
-          transition={{ ease: 'easeOut', duration: 1, delay: 0.3 }}
-        >
-          <SplitWithImage pt="5rem" />
-        </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 100 }}
           whileInView={{ opacity: 1, y: 50 }}
@@ -263,13 +276,23 @@ const Home = () => {
         >
           <SplitWithMessage pt="5rem" />{' '}
         </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 50 }}
+          viewport={{ once: true }}
+          transition={{ ease: 'easeOut', duration: 1, delay: 0.3 }}
+        >
+          <SplitWithImage py="4rem" />
+        </motion.div>
+        <Testimonials />
         <PricingSection />
+        <FAQDisplay />
         <VStack
           spacing="5"
           width={{ base: '100vw', sm: '60vw', md: '30vw' }}
           px={{ base: '1rem', md: '0rem' }}
           alignItems={{ base: 'center' }}
-          my="3rem"
+          py="3rem"
           textAlign="center"
         >
           <Image alt="TaleWeaver icon" src={taleweaverIcon} height="50px" />
@@ -284,7 +307,7 @@ const Home = () => {
           </Text>
 
           <Button variant="styled" onClick={navigateToCreate}>
-            Create Story
+            Try for FREE
           </Button>
           <Box display={{ base: 'none', md: 'inline-block' }}>
             <Icon
@@ -303,7 +326,7 @@ const Home = () => {
               top={'-75px'}
               transform={'rotate(10deg)'}
             >
-              Try it!
+              Try us!
             </Text>
           </Box>
           <Box mb="4rem"></Box>

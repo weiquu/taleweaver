@@ -14,8 +14,8 @@ import {
   Heading,
   Text,
   useColorModeValue,
-  Link,
 } from '@chakra-ui/react';
+import { Link } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { supabase } from '../../App/components/supabaseClient';
@@ -169,8 +169,8 @@ export default function Register() {
               <Stack pt={6}>
                 <Text align={'center'}>
                   Already a user?{' '}
-                  <Link href="/login" color={'blue.400'}>
-                    Login
+                  <Link to="/login">
+                    <u>Login</u>
                   </Link>
                 </Text>
               </Stack>
@@ -187,6 +187,12 @@ export default function Register() {
             </Stack>
           </form>
         </Box>
+        <Text textAlign="center" fontSize="sm" color="gray.400">
+          By continuing, you agree to our{' '}
+          <Link to={'/privacy'}>
+            <u>Privacy Policy</u>
+          </Link>
+        </Text>
       </Stack>
     </Flex>
   );

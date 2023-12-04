@@ -540,9 +540,10 @@ def manage_subscription_status_change(db: Client, subscription_id, customer_id, 
     if create_action:
         # If it's a creation event, we'll need the customer's email to find or create a customer record.
         if not customer_email:
-            raise Exception("Customer email is required for creating a customer.")
-        
-        userid = create_or_retrieve_customer(db, customer_id, customer_email)
+            stripe_customer_response = stripe.Customer.retrieve(customer_id)
+            userid = create_or_retrieve_customer(db, customer_id, stripe_customer_response["email"])
+        else:
+            userid = create_or_retrieve_customer(db, customer_id, customer_email)
     else:
         # For other types of subscription events, find the customer based on the Stripe customer ID.
         customer_response = db.table("customers").select("userid").eq("stripe_customer_id", customer_id).execute().model_dump_json()

@@ -470,13 +470,15 @@ const CreateStory = () => {
               placeholder="Type your story here!"
               isRequired
             />
-            <Button
-              m="1rem"
-              variant="styled-color" //TODO: change to a different color from submit button
-              onClick={handleRandomizePrompt}
-            >
-              Random Story
-            </Button>
+            <Box>
+              <Button
+                size="xs"
+                variant="outline"
+                onClick={handleRandomizePrompt}
+              >
+                I'm feeling lucky!
+              </Button>
+            </Box>
           </VStack>
           <Heading size="lg" pt="2rem" p="1rem">
             Customise

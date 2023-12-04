@@ -14,6 +14,7 @@ import {
 import { ReactNode } from 'react';
 import {
   FaBehance,
+  FaFacebook,
   FaGithub,
   FaInstagram,
   FaLinkedin,
@@ -31,7 +32,12 @@ const ListHeader = ({ children }: { children: ReactNode }) => {
 
 const Footer = () => {
   return (
-    <Flex flexDirection="column" bg="rgb(226, 88, 18)" color="#eeeeee" width="100%">
+    <Flex
+      flexDirection="column"
+      bg="rgb(226, 88, 18)"
+      color="#eeeeee"
+      width="100%"
+    >
       <Divider />
       <Container as={Stack} maxW={'6xl'} py={10}>
         <SimpleGrid
@@ -52,23 +58,21 @@ const Footer = () => {
             <Link href={'/public-library'}>Gallery</Link>
           </Stack>
           <Stack align={'flex-start'}>
-            <ListHeader>Contribute</ListHeader>
-            <Link
-              href={'https://github.com/joshenx/TaleWeaver'}
-              target="_blank"
-            >
-              GitHub
-            </Link>
+            <ListHeader>Information</ListHeader>
+
+            <Link href={'/privacy'}>Privacy Policy</Link>
           </Stack>
           <ButtonGroup variant="ghost">
-            {/* <IconButton
+            <IconButton
               as="a"
-              href="http://linkedin.com/in/joshenxlim"
+              href="https://www.linkedin.com/company/taleweaver/"
               aria-label="LinkedIn"
               target="_blank"
               icon={<FaLinkedin fontSize="1.25rem" />}
-            /> */}
-            <IconButton
+              color="white"
+              _hover={{ bgColor: '#333333' }}
+            />
+            {/* <IconButton
               as="a"
               href="http://github.com/joshenx/TaleWeaver"
               aria-label="GitHub"
@@ -76,14 +80,25 @@ const Footer = () => {
               icon={<FaGithub fontSize="1.25rem" />}
               color="white"
               _hover={{ bgColor: '#333333' }}
-            />
-            {/* <IconButton
+            /> */}
+            <IconButton
               as="a"
-              href="http://instagram.com/joshenz"
+              href="http://instagram.com/taleweaver.app"
               aria-label="Instagram"
               target="_blank"
               icon={<FaInstagram fontSize="1.25rem" />}
-            /> */}
+              color="white"
+              _hover={{ bgColor: '#333333' }}
+            />
+            <IconButton
+              as="a"
+              href="https://www.facebook.com/profile.php?id=61552834593132"
+              aria-label="Facebook"
+              target="_blank"
+              icon={<FaFacebook fontSize="1.25rem" />}
+              color="white"
+              _hover={{ bgColor: '#333333' }}
+            />
           </ButtonGroup>
         </SimpleGrid>
       </Container>

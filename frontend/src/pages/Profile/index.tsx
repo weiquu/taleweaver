@@ -22,10 +22,18 @@ import AvatarsGrid from '../../App/components/AvatarsGrid';
 import { useSubscription } from '../../context/SubscriptionProvider';
 import SubscriptionDisplay from '../../App/components/SubscriptionDisplay';
 import { useCredits } from '../../context/CreditProvider';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { subscription } = useSubscription();
   const { credits } = useCredits();
+
+  const navigate = useNavigate();
+
+  const navigateToPricing = () => {
+    // 👇️ navigate to /contacts
+    navigate('/pricing');
+  };
 
   return (
     <Box
@@ -45,12 +53,17 @@ const Profile = () => {
           </Heading>
           <Text>Your current subscription status: </Text>
           {subscription ? (
-            <SubscriptionDisplay fontSize="1em" px="10px" mb="2rem" />
+            <SubscriptionDisplay fontSize="1.5em" px="10px" />
           ) : (
             <Skeleton height="30px" width="150px" />
           )}
+          {subscription == 'FREE' && (
+            <Button onClick={navigateToPricing} variant="styled-color">
+              View Pricing
+            </Button>
+          )}
 
-          <Stat>
+          <Stat py="2rem">
             <StatLabel>Stories Remaining</StatLabel>
             <StatNumber>{credits}</StatNumber>
           </Stat>

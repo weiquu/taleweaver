@@ -22,7 +22,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/joshenx/taleweaver">
+  <a href="https://github.com/taleweaverapp/taleweaver">
     <img style="margin: 2rem" src="/frontend/src/images/taleweaver_logo_color_light.svg" alt="TaleWeaver Logo" width="300" height="100">
   </a>
 
@@ -30,11 +30,11 @@
     Millions of Customisable, Safe Storybooks
     <br />
     <br />
-    <a href="https://taleweaver.onrender.com/">View Demo</a>
+    <a href="https://taleweaver.net/">View Demo</a>
     ·
-    <a href="https://github.com/joshenx/taleweaver/issues">Report Bug</a>
+    <a href="https://github.com/taleweaverapp/taleweaver/issues">Report Bug</a>
     ·
-    <a href="https://github.com/joshenx/taleweaver/issues">Request Feature</a>
+    <a href="https://github.com/taleweaverapp/taleweaver/issues">Request Feature</a>
   </p>
 </div>
 
@@ -67,13 +67,15 @@
 
 ## About The Project
 
-Are you a time-strapped working parent struggling to find quality storytime for your child? Say goodbye to the frustration of repetitive bedtime tales and the endless quest for the right book. TaleWeaver offers a convenient and time-efficient means for parents to provide personalised storytelling experiences through the use of Language Models (LLMs) for rapid story generation. This not only alleviates the frustration of repetitive and hard-to-find books but also fosters engagement through the child's inclusion as the main character. It stands out as a superior alternative to mindless screen time, encouraging children to explore imaginative worlds through personalised stories and illustrations while also enabling parents to instil moral values, ensuring that the time children spend with TaleWeaver is not just entertaining but also enriching.
+Our application, TaleWeaver, is a web application that offers parents with young children the ability to create customised illustrated stories for their child. In addition to setting various parameters such as what the story is about, what values it should impart, etc, parents can also personalise the story to their child. They do so by creating an avatar that resembles their child and using that as the main character in the story. TaleWeaver thus offers a convenient and time-efficient means for parents to provide personalised storytelling experiences, not only alleviating the frustration of repetitive and hard-to-find books but also fostering engagement through the child’s inclusion as the main character. It stands out as a superior alternative to mindless screen time, encouraging children to explore imaginative worlds through personalised stories and illustrations while also enabling parents to instil moral values, ensuring that the time children spend with TaleWeaver is not just entertaining but also enriching.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- CONTACT -->
 
 ## Contributions
+
+### A3
 
 Joshen Lim - A0214525M
 
@@ -102,6 +104,46 @@ Lau Zhan Ming - A0236552E
 - Frontend development of libraries
 - Integration frontend with backend servers
 - Full stack development of libraries
+
+### Final Project
+
+Joshen Lim - A0214525M
+
+- Product management, delegation of work and prioritisation of tasks
+- Implementation of branding and ensuring consistency throughout website
+- Mobile-responsive development for stories, landing page, and ‘Create Story’ pages
+- Create Avatar feature, Stripe payment integration, migration to SDXL API, credits and subscription logic and display
+- STePS video
+
+Jivesh Mohan - A0221768Y
+
+- Routing of individual stories to unique URLs, only displaying public stories to users
+- Integration of Authentication, Google Auth, email client setup
+- Implementation of notification UI for successful/failed story generation
+- Improve UX of ‘Create Story’ page
+
+Neo Wei Qing - A0217395X
+
+- Spearheaded triaging of deployment options, and handling of deployment versions
+- Developed the Likes feature, sorting of results, integration of avatar descriptors into story
+- Implemented logging of story generation details (total count, success, failures) for better
+- Improved visual display of user’s subscription details, and provide better UX options when users run out of credits
+
+Quan Teng Foong - A0223929X
+
+- Improved Random Story feature to be independent of GPT API calls
+- Spearheaded Job Queue backend logic to allow background generation of stories
+- Developed display for failed generations and allow user to recreate using saved customisation options
+- Integrated Tanstack React Query to cache fetched stories, significantly reducing egress amounts
+- Parallelised generation of images
+
+Justin Lim - A0216138J
+
+- Creation and execution of branding identity and assets
+- UI prototyping and research
+- UX research and reporting
+- Marketing Strategy
+- STEPS marketing collaterals (standee, posters, namecards, stickers)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -146,7 +188,7 @@ All three processes (frontend, backend, storage) should be running at the same t
    pip install -r requirements.txt
    uvicorn src.main:app --reload
    ```
-4. Setup storage on localhost:8080 (default)
+4. Setup storage on localhost:8080
    ```sh
    cd taleweaver/storage
    pip install -r requirements.txt
@@ -161,10 +203,10 @@ All three processes (frontend, backend, storage) should be running at the same t
 
 - [x] Add main features
 - [x] Add readme
-- [ ] Improve image generation
-- [ ] Make stories sharable
+- [x] Improve image generation
+- [x] Make stories sharable
 
-See the [open issues](https://github.com/joshenx/taleweaver/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/taleweaverapp/taleweaver/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

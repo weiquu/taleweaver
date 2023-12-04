@@ -73,8 +73,8 @@ export default function NavBar() {
         zIndex="overlay"
       >
         <Flex
-          flex={{ base: 1, md: 'auto' }}
-          display={{ base: 'flex', md: 'none' }}
+          flex={{ base: 1, lg: 'auto' }}
+          display={{ base: 'flex', lg: 'none' }}
         >
           <IconButton
             onClick={onToggle}
@@ -99,7 +99,7 @@ export default function NavBar() {
             display={{ base: 'inline-block', md: 'none' }}
           />
 
-          <Flex display={{ base: 'none', md: 'flex' }} ml={'1rem'}>
+          <Flex display={{ base: 'none', lg: 'flex' }} ml={'1rem'}>
             <DesktopNav />
           </Flex>
         </Flex>
@@ -181,7 +181,11 @@ export default function NavBar() {
       </Flex>
 
       <Collapse in={isOpen} animateOpacity>
-        <MobileNav handleLogout={handleLogout} session={session} onClickLink={onClose}/>
+        <MobileNav
+          handleLogout={handleLogout}
+          session={session}
+          onClickLink={onClose}
+        />
       </Collapse>
     </Box>
   );
@@ -216,31 +220,47 @@ const DesktopNav = () => {
   );
 };
 
-const MobileNav = ({ handleLogout, session, onClickLink }: { handleLogout: () => void, session: any, onClickLink: () => void }) => {
+const MobileNav = ({
+  handleLogout,
+  session,
+  onClickLink,
+}: {
+  handleLogout: () => void;
+  session: any;
+  onClickLink: () => void;
+}) => {
   return (
     <Stack
       bg={useColorModeValue('white', 'gray.800')}
       borderRadius="10px"
       mt="4rem"
       p={4}
-      display={{ md: 'none' }}
+      display={{ lg: 'none' }}
       position="fixed"
       zIndex="overlay"
     >
       {pagesData
         .filter(({ mainNav }: routerType) => mainNav)
         .map(({ path, title }: routerType, index) => (
-          <MobileNavItem path={path} key={index} mykey={index} title={title} onClick={onClickLink}/>
+          <MobileNavItem
+            path={path}
+            key={index}
+            mykey={index}
+            title={title}
+            onClick={onClickLink}
+          />
         ))}
-      {session && <Button
-        p="1rem"
-        variant="solid"
-        fontSize={'sm'}
-        fontWeight={400}
-        onClick={handleLogout}
-      >
-        Logout
-      </Button>}
+      {session && (
+        <Button
+          p="1rem"
+          variant="solid"
+          fontSize={'sm'}
+          fontWeight={400}
+          onClick={handleLogout}
+        >
+          Logout
+        </Button>
+      )}
     </Stack>
   );
 };
